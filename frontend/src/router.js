@@ -1,6 +1,8 @@
 import {SignIn} from "./components/auth/sign-in.js";
 import {SignUp} from "./components/auth/sign-up.js";
 import {Logout} from "./components/auth/logout";
+import {FileUtils} from "./utils/file-utils";
+import {Main} from "./components/main";
 
 
 export class Router {
@@ -10,23 +12,32 @@ export class Router {
         this.initEvents();
         this.routes = [
             {
-                route: '/sing-in',
+                route: '/',
+                title: "Главная",
+                filePathTemplate: '/templates/pages/main.html',
+                useLayout: false,
+                load: () => {
+                    new Main(this.openNewRoute.bind(this));
+                },
+            },
+            {
+                route: '/sign-in',
                 title: "Вход",
-                filePathTemplate: '/templates/pages/auth/sign-in.html',
+                filePathTemplate: '/templates/auth/sign-in.html',
                 useLayout: false,
                 load: () => {
                     new SignIn(this.openNewRoute.bind(this));
                 },
             },
             {
-                route: '/sing-up',
+                route: '/sign-up',
                 title: "Регистрация",
-                filePathTemplate: '/templates/pages/auth/sign-un.html',
+                filePathTemplate: '/templates/auth/sign-up.html',
                 useLayout: false,
                 load: () => {
                     new SignUp(this.openNewRoute.bind(this));
                 },
-
+                styles: ["icheck-bootstrap.min.css"]
             }
         ]
     }
@@ -65,39 +76,43 @@ export class Router {
 
     async activateRoute(e, oldRoute=null) {
         if( oldRoute ) {
-            // const currentRoute = this.routes.find(item => item.route === oldRoute);
-            // if (currentRoute.styles && currentRoute.styles.length > 0) {
-            //     currentRoute.styles.forEach(style => {
-            //         document.querySelector(`link[href='/css/${style}']`).remove();
-            //     });
-            // }
-            // if (currentRoute.scripts && currentRoute.scripts.length > 0) {
-            //     currentRoute.scripts.forEach(script => {
-            //         document.querySelector(`script[src='/js/${script}']`).remove();
-            //     });
-            // }
-            // if (currentRoute.unload && typeof currentRoute.unload === "function") {
-            //     currentRoute.unload();
-            // }
+            const currentRoute = this.routes.find(item => item.route === oldRoute);
+            if (currentRoute.styles && currentRoute.styles.length > 0) {
+                currentRoute.styles.forEach(style => {
+                    document.querySelector(`link[href='/css/${style}']`).remove();
+                });
+            }
+            if (currentRoute.scripts && currentRoute.scripts.length > 0) {
+                currentRoute.scripts.forEach(script => {
+                    document.querySelector(`script[src='/js/${script}']`).remove();
+                });
+            }
+            if (currentRoute.unload && typeof currentRoute.unload === "function") {
+                currentRoute.unload();
+            }
         }
 
         const urlRoute = window.location.pathname;
         const newRoute = this.routes.find(item => item.route === urlRoute);
         if (newRoute) {
-            // if(newRoute.styles && newRoute.styles.length > 0) {
-            //     newRoute.styles.forEach(style => {
-            //         FileUtils.loadPageStyle('/css/' + style, this.adminLteStyleElement);
-            //     });
-            // }
-            //
-            // if(newRoute.scripts && newRoute.scripts.length > 0) {
-            //     for (const script of newRoute.scripts) {
-            //         await FileUtils.loadPageScript('/js/'+ script);
-            //     }
-            // }
+            if (!newRoute) {
+                console.warn(`Маршрут ${urlRoute} не найден.`);
+                return;
+            }
+            if(newRoute.styles && newRoute.styles.length > 0) {
+                newRoute.styles.forEach(style => {
+                    FileUtils.loadPageStyle('/css/' + style);
+                });
+            }
+
+            if(newRoute.scripts && newRoute.scripts.length > 0) {
+                for (const script of newRoute.scripts) {
+                    await FileUtils.loadPageScript('/js/'+ script);
+                }
+            }
 
             if (newRoute.title) {
-                this.titlePageElement.innerText = newRoute.title + " | Freelance Studio";
+                this.titlePageElement.innerText = newRoute.title;
             }
 
             if (newRoute.filePathTemplate) {
@@ -113,15 +128,9 @@ export class Router {
                 }
                 contentBlock.innerHTML = await fetch(newRoute.filePathTemplate).then(response => response.text());
             }
-
-
             if (newRoute.load && typeof newRoute.load === "function") {
                 newRoute.load();
             }
         }
-        // else {
-        //     history.pushState({}, '', "/404");
-        //     await this.activateRoute();
-        // }
     }
 }

@@ -1,5 +1,5 @@
 export class SignUp {
-    constructor() {
-
+    constructor(openNewRoute) {
+        this.openNewRoute = openNewRoute;
     }
 }

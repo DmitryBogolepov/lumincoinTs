@@ -33,6 +33,8 @@ module.exports = {
             patterns: [
                 {from: "./src/templates", to: "templates"},
                 {from: "./src/static/images", to: "images"},
+                {from: "./node_modules/bootstrap/dist/css/bootstrap.min.css", to: "css"},
+                {from: "./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js", to: "js"},
             ],
         }),
         new HtmlWebpackPlugin({
