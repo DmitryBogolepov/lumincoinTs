@@ -1,0 +1,29 @@
+.buttons-layout  {
+  gap: 20px;
+  font-size: 16px;
+  font-weight: 500;
+  a {
+    width: 100px;
+    height: 37px;
+    box-sizing: border-box;
+  }
+  .choice-interval {
+    a {
+      margin: 0 10px;
+    }
+  }
+}
+
+.diagrams-block {
+  margin-top: 140px;
+  .diagram-title {
+    color: #052C65;
+    font-size: 28px;
+  }
+  .divider {
+    width: 1px;
+    background-color: #CED4DA;
+    height: 467px;
+    margin: 0 87px;
+  }
+}

@@ -3,7 +3,15 @@ import {SignUp} from "./components/auth/sign-up.js";
 import {Logout} from "./components/auth/logout";
 import {FileUtils} from "./utils/file-utils";
 import {Main} from "./components/main";
-
+import {Income} from "./components/finances/income";
+import {Expenses} from "./components/finances/expenses";
+import {ExpensesAdd} from "./components/finances/expenses-add";
+import {ExpensesChange} from "./components/finances/expenses-change";
+import {IncomeAdd} from "./components/finances/income-add";
+import {IncomeChange} from "./components/finances/income-change";
+import {Create} from "./components/finances/create";
+import {Change} from "./components/finances/Change";
+import {IncomeExpense} from "./components/finances/income-expenses";
 
 export class Router {
     constructor() {
@@ -15,7 +23,7 @@ export class Router {
                 route: '/',
                 title: "Главная",
                 filePathTemplate: '/templates/pages/main.html',
-                useLayout: false,
+                useLayout: '/templates/layout.html',
                 load: () => {
                     new Main(this.openNewRoute.bind(this));
                 },
@@ -37,8 +45,94 @@ export class Router {
                 load: () => {
                     new SignUp(this.openNewRoute.bind(this));
                 },
-                styles: ["icheck-bootstrap.min.css"]
-            }
+            },
+            {
+                route: '/income',
+                title: "Доходы",
+                filePathTemplate: '/templates/pages/finance/income.html',
+                useLayout: '/templates/layout.html',
+                load: () => {
+                    new Income(this.openNewRoute.bind(this));
+                },
+            },
+            {
+                route: '/incomeAdd',
+                title: "Доходы",
+                filePathTemplate: '/templates/pages/finance/income-add.html',
+                useLayout: '/templates/layout.html',
+                load: () => {
+                    new IncomeAdd(this.openNewRoute.bind(this));
+                },
+            },
+            {
+                route: '/incomeChange',
+                title: "Доходы",
+                filePathTemplate: '/templates/pages/finance/income-change.html',
+                useLayout: '/templates/layout.html',
+                load: () => {
+                    new IncomeChange(this.openNewRoute.bind(this));
+                },
+            },
+            {
+                route: '/expenses',
+                title: "Расходы",
+                filePathTemplate: '/templates/pages/finance/expenses.html',
+                useLayout: '/templates/layout.html',
+                load: () => {
+                    new Expenses(this.openNewRoute.bind(this));
+                },
+            },
+            {
+                route: '/expensesAdd',
+                title: "Расходы",
+                filePathTemplate: '/templates/pages/finance/expenses-add.html',
+                useLayout: '/templates/layout.html',
+                load: () => {
+                    new ExpensesAdd(this.openNewRoute.bind(this));
+                },
+            },
+            {
+                route: '/expensesChange',
+                title: "Расходы",
+                filePathTemplate: '/templates/pages/finance/expenses-change.html',
+                useLayout: '/templates/layout.html',
+                load: () => {
+                    new ExpensesChange(this.openNewRoute.bind(this));
+                },
+            },
+            {
+                route: '/create',
+                title: "Создание дохода или расхода",
+                filePathTemplate: '/templates/pages/finance/create.html',
+                useLayout: '/templates/layout.html',
+                load: () => {
+                    new Create(this.openNewRoute.bind(this));
+                },
+            },
+            {
+                route: '/change',
+                title: "Редактирование дохода или расхода",
+                filePathTemplate: '/templates/pages/finance/change.html',
+                useLayout: '/templates/layout.html',
+                load: () => {
+                    new Change(this.openNewRoute.bind(this));
+                },
+            },
+            {
+                route: '/income-expenses',
+                title: "Редактирование дохода или расхода",
+                filePathTemplate: '/templates/pages/finance/income-expenses.html',
+                useLayout: '/templates/layout.html',
+                load: () => {
+                    new IncomeExpense(this.openNewRoute.bind(this));
+                },
+            },
+            {
+                route:'/logout',
+                load:() => {
+                    new Logout(this.openNewRoute.bind(this));
+                }
+            },
         ]
     }
     initEvents() {
@@ -128,9 +222,59 @@ export class Router {
                 }
                 contentBlock.innerHTML = await fetch(newRoute.filePathTemplate).then(response => response.text());
             }
+            // Не знал куда лучше вынести код который для сайдбара оставил пока тут
+            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+                if (link.getAttribute('href') === urlRoute) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+
+
             if (newRoute.load && typeof newRoute.load === "function") {
                 newRoute.load();
             }
+            this.initModal();
+        }
+    }
+    initModal() {
+        console.log("Инициализация модалки");
+        const userAction = document.getElementById("user-click"); // Изменено на правильный идентификатор
+        const modal = document.getElementById("user-modal");
+        const closeModal = document.getElementById("close-modal");
+        const logoutBtn = document.getElementById("logout");
+
+        console.log("modal: ", modal); // Проверяем, существует ли модальное окно
+        console.log("closeModal: ", closeModal); // Проверяем, существует ли кнопка закрытия
+        console.log("logoutBtn: ", logoutBtn); // Проверяем, существует ли кнопка выхода
+
+        if (userAction && modal) { // Проверяем, существует ли userAction
+            userAction.addEventListener("click", function (event) {
+                event.preventDefault();
+                console.log("Открытие модалки");
+                modal.style.display = "flex";
+            });
+        }
+
+        if (closeModal && modal) {
+            closeModal.addEventListener("click", function () {
+                modal.style.display = "none";
+            });
+        }
+
+        if (modal) {
+            window.addEventListener("click", function (event) {
+                if (event.target === modal) {
+                    modal.style.display = "none";
+                }
+            });
+        }
+
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", function () {
+                this.openNewRoute('/logout')
+            });
         }
     }
 }

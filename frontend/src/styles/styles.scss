@@ -1,19 +1,41 @@
 @use "auth";
+@use "main";
+@use "finance";
 body {
   font-family: Roboto,"sans-serif";
   font-size: 14px;
+}
+a {
+  cursor: pointer;
+}
+
+.wrapper {
+  display: flex;
+  height: 100vh;
 }
 .sidebar {
   width: 219px;
   box-sizing: border-box;
   height: 100vh;
   color: #052C65;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  hr {
+    width: 219px;
+    padding: 0  !important;
+    height: 1px;
+    background-color: #CED4DA;
+  }
   .logo-img {
     width: 98px;
     height: 40px;
   }
   li {
-    width: 178px;
+    width: 181px;
     box-sizing: border-box;
   }
   .name {
@@ -28,7 +50,97 @@ body {
   }
   .nav-link {
     height: 40px;
+    box-sizing: border-box;
+    font-size: 14px;
+    color: #052C65;
   }
 }
+
+.sidebar .nav-link svg {
+  fill: #052C65;
+  transition: fill 0.3s ease;
+}
+
+.sidebar .nav-link.active {
+  color: white;
+}
+
+.sidebar .nav-link.active svg {
+  fill: white;
+}
+
+.nav-item {
+  position: relative;
+  .arrow {
+    margin-left: 71px;
+    position: absolute;
+    transition: transform 0.5s ease;
+  }
+  &:hover {
+    .arrow {
+      transform: rotate(90deg);
+    }
+  }
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    min-width: 180px;
+    padding: 5px 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  &:hover .dropdown-menu,
+  &:focus-within .dropdown-menu {
+    display: block;
+  }
+
+  .dropdown-item {
+    display: block;
+    padding: 8px 15px;
+    color: #052C65;
+    text-decoration: none;
+    transition: background 0.3s;
+
+    &:hover {
+      background: #f1f1f1;
+    }
+  }
+}
+
+.content-wrapper {
+  flex-grow: 1;
+  margin-left: 219px;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1220px;
+  margin: 0 auto;
+  .main-title {
+    margin-bottom:60px;
+  }
+  h1 {
+    margin-top: 100px;
+    color: #052C65;
+  }
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+
+
+
 
 

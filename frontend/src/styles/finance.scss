@@ -1,0 +1,113 @@
+.finance-title {
+  margin-bottom: 40px;
+}
+
+.actions-block {
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.action-card {
+  flex-direction: column;
+  padding: 20px;
+  width: 352px;
+  height: 121px;
+  box-sizing: border-box;
+  border: 1px solid #CED4DA;
+  border-radius: 12px;
+  .card-title {
+    font-size: 28px;
+    color: #052C65;
+    font-weight: 500;
+  }
+  .card-btns {
+    margin-top: 10px;
+
+    .change-btn {
+      width: 134px;
+      margin-right: 10px;
+      font-size: 14px;
+    }
+    .delete-btn {
+      width: 88px;
+      font-size: 14px;
+    }
+  }
+}
+
+.create-btn {
+  width: 88px;
+  font-size: 14px;
+  height: 38px;
+  margin-right: 10px;
+
+}
+
+.cancel-btn {
+  width:83px;
+  font-size: 14px;
+  height: 38px;
+}
+
+.finance-input {
+  width: 397px;
+  margin-bottom: 10px;
+}
+
+.modal-content {
+  width: 530px;
+  box-sizing: border-box;
+  height: 184px;
+}
+
+.modal-body{
+  text-align: center;
+  padding: 40px 40px 0 40px;
+  p {
+    width: 450px;
+    font-size: 20px;
+    color: #052C65;
+    font-weight: 500;
+  }
+}
+.modal-buttons {
+  padding: 0 40px 40px 40px;
+  :first-child {
+    margin-right: 12px;
+  }
+  button {
+    width: 112px;
+    font-size: 14px;
+  }
+}
+
+.buttons {
+  width: 370px;
+  margin-bottom:40px;
+  :first-child {
+    margin-right: 10px;
+    width: 131px;
+  }
+  a {
+    font-size: 14px;
+    width: 137px;
+  }
+}
+
+.table{
+  margin-top: 40px;
+  th {
+    color: #052C65;
+    font-size: 16px;
+  }
+  tr {
+    text-align: center;
+  }
+  .delete-icon {
+    margin-right: 10px;
+  }
+}
+
+.dropdown-menu {
+   --bs-dropdown-padding-x: unset !important;
+}
