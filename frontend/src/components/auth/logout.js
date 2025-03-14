@@ -5,15 +5,19 @@ export class Logout {
     constructor(openNewRoute) {
         this.openNewRoute = openNewRoute;
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey) || !AuthUtils.getAuthInfo(AuthUtils.refreshTokenKey)) {
-            return this.openNewRoute('/login');
+            return this.openNewRoute('/sign-in');
         }
         this.logout().then();
     }
     async logout(){
-        await HttpUtils.request('/logout','POST',false,{
-            refreshToken: AuthUtils.getAuthInfo(AuthUtils.refreshTokenKey),
-        });
+        try {
+            await HttpUtils.request('/logout','POST',false,{
+                refreshToken: AuthUtils.getAuthInfo(AuthUtils.refreshTokenKey),
+            });
+        } catch (e) {
+            console.error("Ошибка при выходе:", e);
+        }
         AuthUtils.removeAuthInfo();
-        this.openNewRoute("/login");
+        this.openNewRoute("/sign-in");
     }
 }
