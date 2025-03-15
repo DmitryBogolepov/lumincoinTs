@@ -7,7 +7,6 @@ export class HttpUtils {
             error: false,
             response: null,
         };
-
         const params = {
             method: method,
             headers: {
@@ -22,7 +21,6 @@ export class HttpUtils {
                 params.headers['authorization'] = token;
             }
         }
-
         if (body) {
             params.body = JSON.stringify(body);
         }
@@ -38,13 +36,10 @@ export class HttpUtils {
             result.error = true;
             if (useAuth && response.status === 401) {
                 if (!token) {
-                    //1 токена нет
                     result.redirect = '/login';
                 } else {
-                    //2 токен устарел
                     const updateTokenResult = await AuthUtils.updateRefreshToken();
                     if (updateTokenResult) {
-                        // запрос повторно
                         return this.request(url,method,useAuth,body);
                     } else {
                         result.redirect = '/login';

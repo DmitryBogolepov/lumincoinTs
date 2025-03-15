@@ -115,12 +115,11 @@ a {
 .content-wrapper {
   flex-grow: 1;
   margin-left: 219px;
-  padding: 20px;
 }
 
 .container {
   max-width: 1220px;
-  margin: 0 auto;
+  margin-left: 100px;
   .main-title {
     margin-bottom:60px;
   }
@@ -144,5 +143,11 @@ a {
   color: white;
 }
 
+.is-invalid {
+  border: 1px solid red;
+}
 
+.error-text {
+  display: none;
+}
 

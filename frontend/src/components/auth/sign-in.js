@@ -37,15 +37,15 @@ export class SignIn {
                 password: this.passwordElement.value,
                 rememberMe: this.rememberMeElement.checked,
             });
-
-            // if (result.error || !result.response || (result.response && (!result.response.accessToken || !result.response.refreshToken || !result.response.id || !result.response.name))) {
-            //     return;
-            // }
-
-            AuthUtils.setAuthInfo(result.response.accessToken, result.response.refreshToken, {
-                id: result.response.id,
-                name: result.response.name
-            });
+            if (result.error || !result.response ) {
+                document.getElementById('common-error').style.display = 'block';
+                return;
+            }
+            AuthUtils.setAuthInfo(
+                result.response.tokens.accessToken,
+                result.response.tokens.refreshToken,
+                result.response.user
+            );
             this.openNewRoute("/");
         }
     }

@@ -1,7 +1,6 @@
 import {SignIn} from "./components/auth/sign-in.js";
 import {SignUp} from "./components/auth/sign-up.js";
 import {Logout} from "./components/auth/logout";
-import {FileUtils} from "./utils/file-utils";
 import {Main} from "./components/main";
 import {Income} from "./components/finances/income";
 import {Expenses} from "./components/finances/expenses";
@@ -12,6 +11,8 @@ import {IncomeChange} from "./components/finances/income-change";
 import {Create} from "./components/finances/create";
 import {Change} from "./components/finances/Change";
 import {IncomeExpense} from "./components/finances/income-expenses";
+import {AuthUtils} from "./utils/auth-utils";
+
 
 export class Router {
     constructor() {
@@ -216,22 +217,24 @@ export class Router {
                 }
                 contentBlock.innerHTML = await fetch(newRoute.filePathTemplate).then(response => response.text());
             }
-            // Не знал куда лучше вынести код который для сайдбара оставил пока тут
-            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-                if (link.getAttribute('href') === urlRoute) {
-                    link.classList.add('active');
-                } else {
-                    link.classList.remove('active');
-                }
-            });
             if (newRoute.load && typeof newRoute.load === "function") {
                 newRoute.load();
+            }
+
+            //Вынести в layout.js
+            const userInfo = JSON.parse(AuthUtils.getAuthInfo(AuthUtils.userInfoTokenKey));
+            if (userInfo) {
+                document.getElementById('user-name').innerText = userInfo.name+' '+ userInfo.lastName;
             }
             this.initModal();
         }
     }
+
+
+
+
     initModal() {
-        const userAction = document.getElementById("user-click"); // Изменено на правильный идентификатор
+        const userAction = document.getElementById("user-click");
         const modal = document.getElementById("user-modal");
         const closeModal = document.getElementById("close-modal");
 

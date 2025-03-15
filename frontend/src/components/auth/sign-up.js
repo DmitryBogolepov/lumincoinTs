@@ -30,7 +30,7 @@ export class SignUp {
             this.emailElement.classList.add('is-invalid');
             isValid = false;
         }
-        if (this.passwordElement.value && this.passwordElement.value.match(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/)) {
+        if (this.passwordElement.value && this.passwordElement.value.match(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/)) {
             this.passwordElement.classList.remove('is-invalid');
         } else {
             this.passwordElement.classList.add('is-invalid');
@@ -47,22 +47,22 @@ export class SignUp {
 
     async signUp() {
         if (this.validateForm()) {
-
+            const fullName = this.nameElement.value.trim().split(' ');
+            const firstName = fullName[0];
+            const lastName = fullName.slice(1).join(' ');
             const result = await HttpUtils.request('/signup', 'POST', false, {
-                name: this.nameElement.value,
+                name: firstName,
+                lastName:lastName,
                 email: this.emailElement.value,
                 password: this.passwordElement.value,
+                passwordRepeat: this.passwordRepeatElement.value,
             });
-
-            if (result.error || !result.response || (result.response && (!result.response.accessToken || !result.response.refreshToken || !result.response.id || !result.response.name))) {
+            if (result.error || !result.response ) {
                 return;
             }
-
-            AuthUtils.setAuthInfo(result.response.accessToken, result.response.refreshToken, {
-                id: result.response.id,
-                name: result.response.name
-            });
-            this.openNewRoute("/");
+            AuthUtils.setAuthInfo(null,null,result.response.user
+            );
+            this.openNewRoute("/sign-in");
         }
     }
 }
