@@ -60,9 +60,20 @@ export class SignUp {
             if (result.error || !result.response ) {
                 return;
             }
-            AuthUtils.setAuthInfo(null,null,result.response.user
+            const loginResult = await HttpUtils.request('/login', 'POST', false, {
+                email: this.emailElement.value,
+                password: this.passwordElement.value,
+            });
+
+            if (loginResult.error || !loginResult.response) {
+                return;
+            }
+            AuthUtils.setAuthInfo(
+                loginResult.response.tokens.accessToken,
+                loginResult.response.tokens.refreshToken,
+                loginResult.response.user
             );
-            this.openNewRoute("/sign-in");
+            this.openNewRoute("/");
         }
     }
 }
