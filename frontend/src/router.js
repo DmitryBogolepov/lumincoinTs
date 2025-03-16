@@ -195,9 +195,11 @@ export class Router {
                     const username = document.getElementById('user-name');
                     Layout.setUserData(userInfo,username);
                     const balanceElement = document.getElementById('balance');
-                    // if (balanceElement) {
-                    //     await Layout.updateBalance(balanceElement); // Обновляем баланс напрямую из Layout
-                    // }
+                    const navLinksElement = document.querySelectorAll('.sidebar .nav-link');
+                    Layout.linksLogic(navLinksElement, urlRoute)
+                    if (balanceElement) {
+                        await Layout.updateBalance(balanceElement);
+                    }
                  }
             }
             if (newRoute.load && typeof newRoute.load === "function") {

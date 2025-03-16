@@ -3,19 +3,19 @@ import {HttpUtils} from "../utils/http-utils";
 export class Layout {
     constructor() {
         this.modal = document.getElementById("user-modal");
-        this.navLinksElement = document.querySelectorAll('.sidebar .nav-link')
+
         this.initModal();
     }
 
-    // linksLogic() {
-    //     this.navLinksElement.forEach(link => {
-    //         if (link.getAttribute('href') === urlRoute) {
-    //             link.classList.add('active');
-    //         } else {
-    //             link.classList.remove('active');
-    //         }
-    //     });
-    // }
+    static linksLogic(navLinksElement,urlRoute) {
+        navLinksElement.forEach(link => {
+            if (link.getAttribute('href') === urlRoute) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    }
 
     static async updateBalance(balanceItem) {
         try {
@@ -23,10 +23,9 @@ export class Layout {
             if (result.error) {
                 balanceItem.innerText = "Ошибка загрузки";
             } else {
-                balanceItem.innerText = result.balance;
+                balanceItem.innerText = `${result.response.balance.toString()} $`;
             }
         } catch (error) {
-            console.error("Ошибка загрузки баланса:", error);
             balanceItem.innerText = "Ошибка загрузки";
         }
     }

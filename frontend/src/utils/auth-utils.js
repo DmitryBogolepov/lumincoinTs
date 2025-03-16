@@ -29,32 +29,58 @@ export class AuthUtils {
             }
         }
     }
-
     static async updateRefreshToken() {
-        let result = false;
-        const refreshToken = this.getAuthInfo(this.refreshTokenKey);
-        if (refreshToken) {
-            const response = await fetch(config.api + '/refresh', {
-                method: 'POST',
+       let refreshToken = this.getAuthInfo(this.refreshTokenKey);
+        if (!refreshToken) {
+            return false;
+        }
+        try {
+            const response = await fetch(config.api + "/refresh", {
+                method: "POST",
                 headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                    refreshToken: refreshToken,
-                })
-            })
-            if (response && response.status === 200) {
-                const tokens = await response.json();
-                if (tokens && !tokens.error) {
-                    this.setAuthInfo(tokens.accessToken, tokens.refreshToken,);
-                    result = true;
-                }
+                body: JSON.stringify({ refreshToken })
+            });
+            const data = await response.json();
+            console.log("Ответ сервера JSON:", data);
+            if (data.tokens && data.tokens.accessToken) {
+                localStorage.setItem("accessToken", data.tokens.accessToken);
+                return true;
+            } else {
+                return false;
             }
+        } catch (error) {
+            console.error("Ошибка сети при обновлении токена:", error);
+            return false;
         }
-        if (!result){
-            this.removeAuthInfo();
-        }
-        return result;
     }
+    // static async updateRefreshToken() {
+    //     let result = false;
+    //     const refreshToken = this.getAuthInfo(this.refreshTokenKey);
+    //     console.log("Отправляемый refreshToken:", refreshToken);
+    //     if (refreshToken) {
+    //         const response = await fetch(config.api + '/refresh', {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Accept': 'application/json',
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify({
+    //                 refreshToken: refreshToken,
+    //             })
+    //         })
+    //         if (response && response.status === 200) {
+    //             const tokens = await response.json();
+    //             if (tokens && !tokens.error) {
+    //                 this.setAuthInfo(tokens.accessToken, tokens.refreshToken,);
+    //                 result = true;
+    //             }
+    //         }
+    //     }
+    //     if (!result){
+    //         this.removeAuthInfo();
+    //     }
+    //     return result;
+    // }
 }
