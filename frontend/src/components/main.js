@@ -1,4 +1,5 @@
 import {AuthUtils} from "../utils/auth-utils";
+import {HttpUtils} from "../utils/http-utils";
 
 export class Main {
     constructor(openNewRoute) {
@@ -18,6 +19,7 @@ export class Main {
             });
         });
     }
+
     handleButtonClick(event, buttons) {
         buttons.forEach(btn => btn.classList.remove("btn-secondary"));
         buttons.forEach(btn => btn.classList.add("btn-outline-secondary"));
@@ -25,63 +27,59 @@ export class Main {
         event.currentTarget.classList.remove("btn-outline-secondary");
     }
 
-    drawPie() {
-        const incomeData = {
-            labels: ['Red', 'Blue', 'Yellow'],
-            datasets: [{
-                label: 'Income Dataset',
-                data: [300, 50, 100],
-                backgroundColor: [
-                    'rgb(255, 99, 132)',
-                    'rgb(54, 162, 235)',
-                    'rgb(255, 205, 86)'
-                ],
-                hoverOffset: 4
-            }]
-        };
+    async drawPie() {
+        try {
+            const data = await this.getAllData();
 
-        const expensesData = {
-            labels: ['Green', 'Purple', 'Orange'],
-            datasets: [{
-                label: 'Expenses Dataset',
-                data: [150, 250, 100],
-                backgroundColor: [
-                    'rgb(75, 192, 192)',
-                    'rgb(153, 102, 255)',
-                    'rgb(255, 159, 64)'
-                ],
-                hoverOffset: 4
-            }]
-        };
+            const incomeItems = data.filter(item => item.type === "income");
+            const expenseItems = data.filter(item => item.type !== "income");
 
-        const incomeConfig = {
-            type: 'pie',
-            data: incomeData,
+            this.createChart("incomeChart", "Доходы", incomeItems);
+
+            this.createChart("expensesChart", "Расходы", expenseItems);
+
+        } catch (error) {
+            console.error("Ошибка при загрузке данных:", error);
+        }
+    }
+
+    async getAllData() {
+        try {
+            const result = await HttpUtils.request('/operations');
+            return result.response || [];
+        } catch (error) {
+            console.error("Ошибка запроса:", error);
+            return [];
+        }
+    }
+
+    getRandomColor() {
+        return `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
+    }
+
+    createChart(canvasId, label, items) {
+        const ctx = document.getElementById(canvasId)?.getContext("2d");
+        if (!ctx) return;
+
+        new Chart(ctx, {
+            type: "pie",
+            data: {
+                labels: items.map(item => item.comment || "Без названия"),
+                datasets: [{
+                    label: label,
+                    data: items.map(item => item.amount),
+                    backgroundColor: items.map(() => this.getRandomColor()),
+                    hoverOffset: 4
+                }]
+            },
             options: {
                 responsive: true,
                 plugins: {
                     legend: {
-                        position: 'top',
-                    },
+                        position: "top",
+                    }
                 }
-            },
-        };
-        const incomeCtx = document.getElementById('incomeChart').getContext('2d');
-        const incomeChart = new Chart(incomeCtx, incomeConfig);
-
-        const expensesConfig = {
-            type: 'pie',
-            data: expensesData,
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                }
-            },
-        };
-        const expensesCtx = document.getElementById('expensesChart').getContext('2d');
-        const expensesChart = new Chart(expensesCtx, expensesConfig);
+            }
+        });
     }
 }

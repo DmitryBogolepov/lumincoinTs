@@ -23,5 +23,6 @@ export class IncomeAdd {
                 console.error("Ошибка при запросе:", error);
             }
         }
+        this.openNewRoute('/income');
     }
 }

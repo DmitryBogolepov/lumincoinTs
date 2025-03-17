@@ -12,9 +12,11 @@ export class ExpensesChange {
     }
 
     async changeExpensesItem() {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
         if (this.titleElement.value && this.titleElement.value.length > 0) {
             try {
-                const result = await HttpUtils.request("/categories/expense/1", "PUT", true, {
+                const result = await HttpUtils.request(`/categories/expense/${id}`, "PUT", true, {
                     title:this.titleElement.value,
                 });
                 if (result.error || !result.response) {
@@ -24,5 +26,6 @@ export class ExpensesChange {
                 console.error("Ошибка при запросе:", error);
             }
         }
+        this.openNewRoute('/expenses');
     }
 }

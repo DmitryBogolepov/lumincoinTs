@@ -24,5 +24,6 @@ export class ExpensesAdd {
                 console.error("Ошибка при запросе:", error);
             }
         }
+        this.openNewRoute('/expenses');
     }
 }
