@@ -12,12 +12,35 @@ export class Change {
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             return this.openNewRoute('/sign-in');
         }
+        this.typeElement.addEventListener('change', this.onTypeChange.bind(this));
         document.getElementById('process-button').addEventListener('click', this.createNewInfo.bind(this));
+    }
+
+    async onTypeChange() {
+        const selectedType = this.typeElement.value.trim();
+        this.categoryElement.innerHTML = "";
+        if (selectedType === "income") {
+            const categories = await this.getIncomeCategories();
+            categories.forEach(category => {
+                let option = document.createElement('option');
+                option.value = category.title;
+                option.text = category.title;
+                this.categoryElement.appendChild(option);
+            });
+        } else if (selectedType === "expense") {
+            const categories = await this.getExpenseCategories();
+            categories.forEach(category => {
+                let option = document.createElement('option');
+                option.value = category.title;
+                option.text = category.title;
+                this.categoryElement.appendChild(option);
+            })
+        }
     }
 
     validateData(type, category_id, amount, date, comment) {
         let isValid = true;
-        if (["income", "expenses"].includes(type)) {
+        if (["Доход", "Расход"].includes(type)) {
             this.typeElement.classList.remove('is-invalid');
         } else {
             this.typeElement.classList.add('is-invalid');
@@ -81,5 +104,19 @@ export class Change {
         } catch (error) {
             console.error("Ошибка при запросе:", error);
         }
+    }
+    async getIncomeCategories() {
+        const categories =await HttpUtils.request("/categories/income");
+        if (categories.error || !categories.response) {
+            return;
+        }
+        return categories.response;
+    }
+    async getExpenseCategories() {
+        const categories =await HttpUtils.request("/categories/expense");
+        if (categories.error || !categories.response) {
+            return;
+        }
+        return categories.response;
     }
 }

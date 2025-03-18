@@ -29,6 +29,9 @@ export class Expenses {
                     const response = await HttpUtils.request(`/categories/expense/${this.currentDeleteId}`, "DELETE", true);
                     if (!response.error) {
                         this.currentDeleteTarget.remove();
+                        const modalElement = document.getElementById("deleteModal");
+                        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                        modalInstance.hide();
                     } else {
                         console.error("Ошибка удаления:", response);
                     }
@@ -36,9 +39,6 @@ export class Expenses {
                     console.error("Ошибка запроса:", error);
                 }
             }
-            const modalElement = document.getElementById("deleteModal");
-            const modalInstance = bootstrap.Modal.getInstance(modalElement);
-            modalInstance.hide();
         });
     }
 

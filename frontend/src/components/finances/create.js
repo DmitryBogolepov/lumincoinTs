@@ -12,19 +12,41 @@ export class Create {
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             return this.openNewRoute('/sign-in');
         }
+        this.typeElement.addEventListener('change', this.onTypeChange.bind(this));
         document.getElementById('process-button').addEventListener('click', this.createNewInfo.bind(this));
     }
 
-    validateData(type, category_id, amount, date, comment) {
+    async onTypeChange() {
+        const selectedType = this.typeElement.value.trim();
+        this.categoryElement.innerHTML = "";
+        if (selectedType === "income") {
+            const categories = await this.getIncomeCategories();
+            categories.forEach(category => {
+                let option = document.createElement('option');
+                option.value = category.title;
+                option.text = category.title;
+                this.categoryElement.appendChild(option);
+            });
+        } else if (selectedType === "expense") {
+            const categories = await this.getExpenseCategories();
+            categories.forEach(category => {
+                let option = document.createElement('option');
+                option.value = category.title;
+                option.text = category.title;
+                this.categoryElement.appendChild(option);
+            })
+        }
+    }
+
+    validateData(type, category, amount, date, comment) {
         let isValid = true;
-        if (["income", "expenses"].includes(type)) {
+        if (["income", "expense"].includes(type)) {
             this.typeElement.classList.remove('is-invalid');
         } else {
             this.typeElement.classList.add('is-invalid');
             isValid = false;
         }
-
-        if (!(isNaN(category_id) || category_id <= 0)) {
+        if (category || category !== null) {
             this.categoryElement.classList.remove('is-invalid');
         } else {
             this.categoryElement.classList.add('is-invalid');
@@ -54,22 +76,27 @@ export class Create {
         return isValid;
     }
 
+
+
     async createNewInfo() {
-        const type = this.typeElement.value.trim();
-        const category_id = Number(this.categoryElement.value);
+        let type = this.typeElement.value.trim();
+        const category = this.categoryElement.value;
         const amount = Number(this.amountElement.value);
         const date = this.dateElement.value.trim();
         const comment = this.commentaryElement.value.trim();
-
-        const isValid = this.validateData(type, category_id, amount, date, comment);
+        if (type === "Доход") {
+            type = "income";
+        } else if (type === "Расход") {
+            type = "expense";
+        }
+        const isValid = this.validateData(type, category, amount, date, comment);
         if (!isValid) {
-            console.log('');
             return;
         }
         try {
             const result = await HttpUtils.request("/operations", "POST", true, {
                 type,
-                category_id,
+                category,
                 amount,
                 date,
                 comment,
@@ -81,5 +108,20 @@ export class Create {
         } catch (error) {
             console.error("Ошибка при запросе:", error);
         }
+    }
+
+    async getIncomeCategories() {
+        const categories =await HttpUtils.request("/categories/income");
+        if (categories.error || !categories.response) {
+            return;
+        }
+        return categories.response;
+    }
+    async getExpenseCategories() {
+        const categories =await HttpUtils.request("/categories/expense");
+        if (categories.error || !categories.response) {
+            return;
+        }
+        return categories.response;
     }
 }
