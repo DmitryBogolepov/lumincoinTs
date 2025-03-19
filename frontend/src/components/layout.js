@@ -15,6 +15,43 @@ export class Layout {
                 link.classList.remove('active');
             }
         });
+        const categoryLink = document.getElementById("categoryDropdown");
+        const arrow = document.getElementById("arrow");
+        const block = document.getElementById("dropdown-block");
+        categoryLink.addEventListener("click", () => {
+            if (block.classList.contains('selected')) {
+                categoryLink.classList.remove('active');
+                block.classList.remove('selected');
+                arrow.classList.remove('rotated');
+                document.querySelectorAll(".dropdown-item").forEach(link => {
+                    link.style.display = "none";
+                })
+            } else  {
+                block.classList.add("selected");
+                categoryLink.classList.add('active');
+                arrow.classList.add('rotated');
+                document.querySelectorAll(".dropdown-item").forEach(link => {
+                    link.style.display = "block";
+                })
+            }
+        });
+        const dropdownLinks = document.querySelectorAll(".dropdown-item");
+        let isDropdownActive = false;
+        dropdownLinks.forEach(link => {
+            if (link.getAttribute('href') === urlRoute) {
+                block.classList.add("selected");
+                link.classList.add('active');
+                isDropdownActive = true;
+            } else {
+                block.classList.remove('selected');
+                link.classList.remove('active');
+            }
+        });
+        if (isDropdownActive) {
+            categoryLink.classList.add('active');
+        } else {
+            categoryLink.classList.remove('active');
+        }
     }
 
     static async updateBalance(balanceItem) {
