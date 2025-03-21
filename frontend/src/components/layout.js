@@ -7,7 +7,7 @@ export class Layout {
         this.initModal();
     }
 
-    static linksLogic(navLinksElement,urlRoute) {
+    static linksLogic(navLinksElement, urlRoute) {
         navLinksElement.forEach(link => {
             if (link.getAttribute('href') === urlRoute) {
                 link.classList.add('active');
@@ -15,44 +15,50 @@ export class Layout {
                 link.classList.remove('active');
             }
         });
+
         const categoryLink = document.getElementById("categoryDropdown");
         const arrow = document.getElementById("arrow");
         const block = document.getElementById("dropdown-block");
-        categoryLink.addEventListener("click", () => {
-            if (block.classList.contains('selected')) {
-                categoryLink.classList.remove('active');
-                block.classList.remove('selected');
-                arrow.classList.remove('rotated');
-                document.querySelectorAll(".dropdown-item").forEach(link => {
-                    link.style.display = "none";
-                })
-            } else  {
-                block.classList.add("selected");
-                categoryLink.classList.add('active');
-                arrow.classList.add('rotated');
-                document.querySelectorAll(".dropdown-item").forEach(link => {
-                    link.style.display = "block";
-                })
-            }
-        });
         const dropdownLinks = document.querySelectorAll(".dropdown-item");
         let isDropdownActive = false;
+
         dropdownLinks.forEach(link => {
             if (link.getAttribute('href') === urlRoute) {
-                block.classList.add("selected");
                 link.classList.add('active');
                 isDropdownActive = true;
             } else {
-                block.classList.remove('selected');
                 link.classList.remove('active');
             }
         });
+
         if (isDropdownActive) {
+            block.classList.add("selected");
             categoryLink.classList.add('active');
+            arrow.classList.add('rotated');
+            dropdownLinks.forEach(link => link.style.display = "block");
         } else {
+            block.classList.remove("selected");
             categoryLink.classList.remove('active');
+            arrow.classList.remove('rotated');
+            dropdownLinks.forEach(link => link.style.display = "none");
         }
+
+        categoryLink.addEventListener("click", () => {
+            const isSelected = block.classList.contains('selected');
+            if (isSelected) {
+                block.classList.remove('selected');
+                categoryLink.classList.remove('active');
+                arrow.classList.remove('rotated');
+                dropdownLinks.forEach(link => link.style.display = "none");
+            } else {
+                block.classList.add("selected");
+                categoryLink.classList.add('active');
+                arrow.classList.add('rotated');
+                dropdownLinks.forEach(link => link.style.display = "block");
+            }
+        });
     }
+
 
     static async updateBalance(balanceItem) {
         try {

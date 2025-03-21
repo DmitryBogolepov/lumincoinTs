@@ -148,3 +148,23 @@ a {
   font-size: 14px;
   padding: 8px 15px;
 }
+//
+//@media screen and (max-width: 1200px) {
+//    .container {
+//      max-width: 1000px;
+//    }
+//}
+
+.dropdown-block {
+  .nav-link:last-child{
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+  .nav-link:first-child {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .nav-link:nth-child(2) {
+    border-radius: 0;
+  }
+}
