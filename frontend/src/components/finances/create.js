@@ -12,6 +12,7 @@ export class Create {
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             return this.openNewRoute('/sign-in');
         }
+        this.setSelectValue();
         this.typeElement.addEventListener('change', this.onTypeChange.bind(this));
         document.getElementById('process-button').addEventListener('click', this.createNewInfo.bind(this));
     }
@@ -31,7 +32,7 @@ export class Create {
             const categories = await this.getExpenseCategories();
             categories.forEach(category => {
                 let option = document.createElement('option');
-                option.value = category.title;
+                option.value = category.id;
                 option.text = category.title;
                 this.categoryElement.appendChild(option);
             })
@@ -76,7 +77,14 @@ export class Create {
         return isValid;
     }
 
-
+    setSelectValue() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const type = urlParams.get("type");
+        if (type) {
+            this.typeElement.value = type;
+            this.onTypeChange();
+        }
+    }
 
     async createNewInfo() {
         let type = this.typeElement.value.trim();
@@ -96,7 +104,7 @@ export class Create {
         try {
             const result = await HttpUtils.request("/operations", "POST", true, {
                 type,
-                category,
+                category_id : category,
                 amount,
                 date,
                 comment,
@@ -104,6 +112,8 @@ export class Create {
             if (result.error || !result.response) {
                 console.error("Ошибка при запросе:", result.error.value);
                 return;
+            } else {
+                this.openNewRoute("/income-expenses")
             }
         } catch (error) {
             console.error("Ошибка при запросе:", error);
@@ -111,14 +121,15 @@ export class Create {
     }
 
     async getIncomeCategories() {
-        const categories =await HttpUtils.request("/categories/income");
+        const categories = await HttpUtils.request("/categories/income");
         if (categories.error || !categories.response) {
             return;
         }
         return categories.response;
     }
+
     async getExpenseCategories() {
-        const categories =await HttpUtils.request("/categories/expense");
+        const categories = await HttpUtils.request("/categories/expense");
         if (categories.error || !categories.response) {
             return;
         }

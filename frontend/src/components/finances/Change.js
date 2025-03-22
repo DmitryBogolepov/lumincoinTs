@@ -12,8 +12,34 @@ export class Change {
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             return this.openNewRoute('/sign-in');
         }
+        this.loadData();
         this.typeElement.addEventListener('change', this.onTypeChange.bind(this));
         document.getElementById('process-button').addEventListener('click', this.createNewInfo.bind(this));
+    }
+
+    async loadData() {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+        if (id) {
+            try {
+                const result = await HttpUtils.request(`/operations/${id}`, "GET", true);
+                if (result.response) {
+                    this.populateForm(result.response);
+                }
+            } catch (error) {
+                console.error("Ошибка при загрузке данных операции:", error);
+            }
+        }
+    }
+
+    populateForm(data) {
+        this.typeElement.value = data.type;
+        this.amountElement.value = data.amount;
+        this.dateElement.value = data.date;
+        this.commentaryElement.value = data.comment || '';
+
+        this.onTypeChange();
+        this.categoryElement.value = data.category_id;
     }
 
     async onTypeChange() {
@@ -38,16 +64,15 @@ export class Change {
         }
     }
 
-    validateData(type, category_id, amount, date, comment) {
+    validateData(type, category, amount, date, comment) {
         let isValid = true;
-        if (["Доход", "Расход"].includes(type)) {
+        if (["income", "expense"].includes(type)) {
             this.typeElement.classList.remove('is-invalid');
         } else {
             this.typeElement.classList.add('is-invalid');
             isValid = false;
         }
-
-        if (!(isNaN(category_id) || category_id <= 0)) {
+        if (category || category !== null) {
             this.categoryElement.classList.remove('is-invalid');
         } else {
             this.categoryElement.classList.add('is-invalid');
@@ -83,14 +108,16 @@ export class Change {
         const amount = Number(this.amountElement.value);
         const date = this.dateElement.value.trim();
         const comment = this.commentaryElement.value.trim();
-
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+        if (!id) return;
         const isValid = this.validateData(type, category_id, amount, date, comment);
         if (!isValid) {
             alert("Ошибка валидации, проверьте введенные данные.");
             return;
         }
         try {
-            const result = await HttpUtils.request("/operations", "PUT", true, {
+            const result = await HttpUtils.request(`/operations/${id}`, "PUT", true, {
                 type,
                 category_id,
                 amount,
@@ -100,6 +127,8 @@ export class Change {
             if (result.error || !result.response) {
                 alert("Произошла ошибка при отправке данных.");
                 return;
+            } else {
+                this.openNewRoute("/income-expenses")
             }
         } catch (error) {
             console.error("Ошибка при запросе:", error);

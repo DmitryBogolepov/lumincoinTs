@@ -43,7 +43,6 @@ export class AuthUtils {
                 body: JSON.stringify({ refreshToken })
             });
             const data = await response.json();
-            console.log("Ответ сервера JSON:", data);
             if (data.tokens && data.tokens.accessToken) {
                 localStorage.setItem("accessToken", data.tokens.accessToken);
                 return true;
