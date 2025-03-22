@@ -54,32 +54,4 @@ export class AuthUtils {
             return false;
         }
     }
-    // static async updateRefreshToken() {
-    //     let result = false;
-    //     const refreshToken = this.getAuthInfo(this.refreshTokenKey);
-    //     console.log("Отправляемый refreshToken:", refreshToken);
-    //     if (refreshToken) {
-    //         const response = await fetch(config.api + '/refresh', {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Accept': 'application/json',
-    //                 'Content-Type': 'application/json',
-    //             },
-    //             body: JSON.stringify({
-    //                 refreshToken: refreshToken,
-    //             })
-    //         })
-    //         if (response && response.status === 200) {
-    //             const tokens = await response.json();
-    //             if (tokens && !tokens.error) {
-    //                 this.setAuthInfo(tokens.accessToken, tokens.refreshToken,);
-    //                 result = true;
-    //             }
-    //         }
-    //     }
-    //     if (!result){
-    //         this.removeAuthInfo();
-    //     }
-    //     return result;
-    // }
 }

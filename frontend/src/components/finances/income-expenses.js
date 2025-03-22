@@ -162,9 +162,13 @@ export class IncomeExpense {
                 typeText = "Неизвестно";
                 typeColor = "text-muted";
             }
-            
-            const category = this.categories.find(cat => cat.type === item.type);
-            categoryText = category ? category.title : '—';
+
+            const category = this.categories.find(cat => cat.id === item.category_id);
+            if (category) {
+                categoryText = category.title;
+            } else {
+                console.warn(`Категория с id ${item.category_id} не найдена`);
+            }
 
             const row = document.createElement("tr");
             row.classList.add("table-row");
