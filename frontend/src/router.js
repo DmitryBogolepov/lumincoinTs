@@ -1,7 +1,6 @@
 import {SignIn} from "./components/auth/sign-in.js";
 import {SignUp} from "./components/auth/sign-up.js";
 import {Logout} from "./components/auth/logout";
-import {FileUtils} from "./utils/file-utils";
 import {Main} from "./components/main";
 import {Income} from "./components/finances/income";
 import {Expenses} from "./components/finances/expenses";
@@ -12,6 +11,8 @@ import {IncomeChange} from "./components/finances/income-change";
 import {Create} from "./components/finances/create";
 import {Change} from "./components/finances/Change";
 import {IncomeExpense} from "./components/finances/income-expenses";
+import {AuthUtils} from "./utils/auth-utils";
+
 
 export class Router {
     constructor() {
@@ -169,22 +170,22 @@ export class Router {
     }
 
     async activateRoute(e, oldRoute=null) {
-        if( oldRoute ) {
-            const currentRoute = this.routes.find(item => item.route === oldRoute);
-            if (currentRoute.styles && currentRoute.styles.length > 0) {
-                currentRoute.styles.forEach(style => {
-                    document.querySelector(`link[href='/css/${style}']`).remove();
-                });
-            }
-            if (currentRoute.scripts && currentRoute.scripts.length > 0) {
-                currentRoute.scripts.forEach(script => {
-                    document.querySelector(`script[src='/js/${script}']`).remove();
-                });
-            }
-            if (currentRoute.unload && typeof currentRoute.unload === "function") {
-                currentRoute.unload();
-            }
-        }
+        // if( oldRoute ) {
+        //     const currentRoute = this.routes.find(item => item.route === oldRoute);
+        //     if (currentRoute.styles && currentRoute.styles.length > 0) {
+        //         currentRoute.styles.forEach(style => {
+        //             document.querySelector(`link[href='/css/${style}']`).remove();
+        //         });
+        //     }
+        //     if (currentRoute.scripts && currentRoute.scripts.length > 0) {
+        //         currentRoute.scripts.forEach(script => {
+        //             document.querySelector(`script[src='/js/${script}']`).remove();
+        //         });
+        //     }
+        //     if (currentRoute.unload && typeof currentRoute.unload === "function") {
+        //         currentRoute.unload();
+        //     }
+        // }
 
         const urlRoute = window.location.pathname;
         const newRoute = this.routes.find(item => item.route === urlRoute);
@@ -193,18 +194,17 @@ export class Router {
                 console.warn(`Маршрут ${urlRoute} не найден.`);
                 return;
             }
-            if(newRoute.styles && newRoute.styles.length > 0) {
-                newRoute.styles.forEach(style => {
-                    FileUtils.loadPageStyle('/css/' + style);
-                });
-            }
-
-            if(newRoute.scripts && newRoute.scripts.length > 0) {
-                for (const script of newRoute.scripts) {
-                    await FileUtils.loadPageScript('/js/'+ script);
-                }
-            }
-
+            // if(newRoute.styles && newRoute.styles.length > 0) {
+            //     newRoute.styles.forEach(style => {
+            //         FileUtils.loadPageStyle('/css/' + style);
+            //     });
+            // }
+            //
+            // if(newRoute.scripts && newRoute.scripts.length > 0) {
+            //     for (const script of newRoute.scripts) {
+            //         await FileUtils.loadPageScript('/js/'+ script);
+            //     }
+            // }
             if (newRoute.title) {
                 this.titlePageElement.innerText = newRoute.title;
             }
@@ -214,45 +214,33 @@ export class Router {
                 if (newRoute.useLayout) {
                     this.contentPageElement.innerHTML = await fetch(newRoute.useLayout).then(response => response.text());
                     contentBlock = document.getElementById('content-layout');
-                    document.body.classList.add('sidebar-mini');
-                    document.body.classList.add('layout-fixed');
-                } else {
-                    document.body.classList.remove('sidebar-mini');
-                    document.body.classList.remove('layout-fixed');
                 }
                 contentBlock.innerHTML = await fetch(newRoute.filePathTemplate).then(response => response.text());
             }
-            // Не знал куда лучше вынести код который для сайдбара оставил пока тут
-            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-                if (link.getAttribute('href') === urlRoute) {
-                    link.classList.add('active');
-                } else {
-                    link.classList.remove('active');
-                }
-            });
-
-
             if (newRoute.load && typeof newRoute.load === "function") {
                 newRoute.load();
+            }
+
+            //Вынести в layout.js
+            const userInfo = JSON.parse(AuthUtils.getAuthInfo(AuthUtils.userInfoTokenKey));
+            if (userInfo) {
+                document.getElementById('user-name').innerText = userInfo.name+' '+ userInfo.lastName;
             }
             this.initModal();
         }
     }
+
+
+
+
     initModal() {
-        console.log("Инициализация модалки");
-        const userAction = document.getElementById("user-click"); // Изменено на правильный идентификатор
+        const userAction = document.getElementById("user-click");
         const modal = document.getElementById("user-modal");
         const closeModal = document.getElementById("close-modal");
-        const logoutBtn = document.getElementById("logout");
 
-        console.log("modal: ", modal); // Проверяем, существует ли модальное окно
-        console.log("closeModal: ", closeModal); // Проверяем, существует ли кнопка закрытия
-        console.log("logoutBtn: ", logoutBtn); // Проверяем, существует ли кнопка выхода
-
-        if (userAction && modal) { // Проверяем, существует ли userAction
+        if (userAction && modal) {
             userAction.addEventListener("click", function (event) {
                 event.preventDefault();
-                console.log("Открытие модалки");
                 modal.style.display = "flex";
             });
         }
@@ -268,12 +256,6 @@ export class Router {
                 if (event.target === modal) {
                     modal.style.display = "none";
                 }
-            });
-        }
-
-        if (logoutBtn) {
-            logoutBtn.addEventListener("click", function () {
-                this.openNewRoute('/logout')
             });
         }
     }

@@ -1,12 +1,9 @@
 import config from "../config/config";
 
 export class AuthUtils {
-
     static accessTokenKey = "accessToken";
     static refreshTokenKey = "refreshToken";
     static userInfoTokenKey = "userInfo";
-
-
     static setAuthInfo(accessToken, refreshToken, userInfo = null) {
         localStorage.setItem(this.accessTokenKey, accessToken);
         localStorage.setItem(this.refreshTokenKey, refreshToken);
