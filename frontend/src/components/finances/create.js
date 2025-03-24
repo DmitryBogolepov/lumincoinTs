@@ -20,23 +20,20 @@ export class Create {
     async onTypeChange() {
         const selectedType = this.typeElement.value.trim();
         this.categoryElement.innerHTML = "";
+        let categories = [];
+
         if (selectedType === "income") {
-            const categories = await this.getIncomeCategories();
-            categories.forEach(category => {
-                let option = document.createElement('option');
-                option.value = category.title;
-                option.text = category.title;
-                this.categoryElement.appendChild(option);
-            });
+            categories = await this.getIncomeCategories();
         } else if (selectedType === "expense") {
-            const categories = await this.getExpenseCategories();
-            categories.forEach(category => {
-                let option = document.createElement('option');
-                option.value = category.id;
-                option.text = category.title;
-                this.categoryElement.appendChild(option);
-            })
+            categories = await this.getExpenseCategories();
         }
+
+        categories.forEach(category => {
+            let option = document.createElement('option');
+            option.value = category.id;
+            option.text = category.title;
+            this.categoryElement.appendChild(option);
+        });
     }
 
     validateData(type, category, amount, date, comment) {
@@ -88,7 +85,7 @@ export class Create {
 
     async createNewInfo() {
         let type = this.typeElement.value.trim();
-        const category = this.categoryElement.value;
+        const category_id = this.categoryElement.value;
         const amount = Number(this.amountElement.value);
         const date = this.dateElement.value.trim();
         const comment = this.commentaryElement.value.trim();
@@ -97,18 +94,20 @@ export class Create {
         } else if (type === "Расход") {
             type = "expense";
         }
-        const isValid = this.validateData(type, category, amount, date, comment);
+        const isValid = this.validateData(type, category_id, amount, date, comment);
         if (!isValid) {
             return;
         }
         try {
             const result = await HttpUtils.request("/operations", "POST", true, {
                 type,
-                category_id : category,
+                category_id : category_id,
                 amount,
                 date,
                 comment,
             });
+            console.log("Ответ от сервера:", result);
+            console.log("Ответ сервера (response):", result.response);
             if (result.error || !result.response) {
                 console.error("Ошибка при запросе:", result.error.value);
                 return;

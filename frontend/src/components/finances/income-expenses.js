@@ -133,6 +133,7 @@ export class IncomeExpense {
                 params.append("dateTo", this.endDate.toISOString().split("T")[0]);
             }
             const result = await HttpUtils.request(`/operations?${params}`, "GET", true);
+            console.log(result);
             return result.response || [];
         } catch (error) {
             console.error("Ошибка запроса:", error);
@@ -164,6 +165,7 @@ export class IncomeExpense {
             }
 
             const category = this.categories.find(cat => cat.id === item.category_id);
+            console.log(category)
             if (category) {
                 categoryText = category.title;
             } else {
