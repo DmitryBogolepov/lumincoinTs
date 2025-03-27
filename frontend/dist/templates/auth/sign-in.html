@@ -1,7 +1,9 @@
 <div class="content d-flex align-items-center justify-content-center">
     <img src="/images/Logo.png" class="mt-" alt="">
     <div class="title mb-4">Вход</div>
+    <div class="error-text text-danger mb-2" id="common-error">Неправильный пароль или E-mail</div>
     <div class="input input-group has-validation">
+
         <span class="input-group-text"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"
                                             xmlns="http://www.w3.org/2000/svg">
 <path fill-rule="evenodd" clip-rule="evenodd"
@@ -21,7 +23,7 @@
       fill="#6C757D"/>
 </svg>
 </span>
-        <input type="text" class="form-control col-6" placeholder="Пароль" id="password">
+        <input type="password" class="form-control col-6" placeholder="Пароль" id="password">
         <div class="invalid-feedback">Заполните пароль</div>
     </div>
     <div class="form-check mt-2 mb-3">
@@ -29,7 +31,7 @@
         <label for="remember-me" class="form-check-label mb-2">Запомнить меня</label>
     </div>
     <div class="action">
-        <a href="#" class="btn btn-primary mb-2">Войти</a>
+        <a href="javascript:void(0)" class="btn btn-primary mb-2" id="process-button">Войти</a>
         <div class="account">Еще нет аккаунта? <a href="/sign-up" class="ms-1">Пройдите регистрацию</a></div>
     </div>
 </div>

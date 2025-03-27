@@ -74,12 +74,12 @@ export class Create {
         return isValid;
     }
 
-    setSelectValue() {
+    async setSelectValue() {
         const urlParams = new URLSearchParams(window.location.search);
         const type = urlParams.get("type");
         if (type) {
             this.typeElement.value = type;
-            this.onTypeChange();
+            await this.onTypeChange();
         }
     }
 
@@ -106,11 +106,8 @@ export class Create {
                 date,
                 comment,
             });
-            console.log("Ответ от сервера:", result);
-            console.log("Ответ сервера (response):", result.response);
             if (result.error || !result.response) {
                 console.error("Ошибка при запросе:", result.error.value);
-                return;
             } else {
                 this.openNewRoute("/income-expenses")
             }

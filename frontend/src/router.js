@@ -9,7 +9,7 @@ import {ExpensesChange} from "./components/finances/expenses-change";
 import {IncomeAdd} from "./components/finances/income-add";
 import {IncomeChange} from "./components/finances/income-change";
 import {Create} from "./components/finances/create";
-import {Change} from "./components/finances/Change";
+import {Change} from "./components/finances/change";
 import {IncomeExpense} from "./components/finances/income-expenses";
 import {AuthUtils} from "./utils/auth-utils";
 import {Layout} from "./components/layout";

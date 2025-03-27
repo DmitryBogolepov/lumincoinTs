@@ -1,19 +1,19 @@
 import { AuthUtils } from "../../utils/auth-utils";
 import { HttpUtils } from "../../utils/http-utils";
-
+import flatpickr from "../../../node_modules/flatpickr/dist/flatpickr.min.js";
 export class IncomeExpense {
     constructor(openNewRoute) {
         this.openNewRoute = openNewRoute;
         this.currentPeriod = "all";
         this.startDate = null;
         this.endDate = null;
-        this.categories = []; // Массив для хранения категорий
+        this.categories = [];
 
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             return this.openNewRoute('/sign-in');
         }
 
-        this.loadCategories(); // Загружаем категории при инициализации
+        this.loadCategories();
         this.setupButtonListeners();
         this.initDatePickers();
         this.drawTable();
@@ -26,11 +26,11 @@ export class IncomeExpense {
             const expenseResult = await HttpUtils.request("/categories/expense", "GET", true);
 
             if (!incomeResult.error && incomeResult.response) {
-                this.categories.push(...incomeResult.response.map(cat => ({ ...cat, type: 'income' }))); // Добавляем категории дохода
+                this.categories.push(...incomeResult.response.map(cat => ({ ...cat, type: 'income' })));
             }
 
             if (!expenseResult.error && expenseResult.response) {
-                this.categories.push(...expenseResult.response.map(cat => ({ ...cat, type: 'expense' }))); // Добавляем категории расходов
+                this.categories.push(...expenseResult.response.map(cat => ({ ...cat, type: 'expense' })));
             }
         } catch (error) {
             console.error("Ошибка при загрузке категорий:", error);
@@ -40,13 +40,13 @@ export class IncomeExpense {
     setupButtonListeners() {
         const buttons = document.querySelectorAll(".buttons-layout a");
         buttons.forEach(button => {
-            button.addEventListener("click", (event) => {
-                this.handleButtonClick(event, buttons);
+            button.addEventListener("click", async (event) => {
+                await this.handleButtonClick(event, buttons);
             });
         });
     }
 
-    handleButtonClick(event, buttons) {
+    async handleButtonClick(event, buttons) {
         buttons.forEach(btn => btn.classList.remove("btn-secondary"));
         buttons.forEach(btn => btn.classList.add("btn-outline-secondary"));
         event.currentTarget.classList.add("btn-secondary");
@@ -78,21 +78,21 @@ export class IncomeExpense {
         }
 
         if (this.currentPeriod === "interval") {
-            this.updateTable();
+            await this.updateTable();
         } else {
-            this.drawTable();
+            await this.drawTable();
         }
     }
 
-    initDatePickers() {
+    async initDatePickers() {
         const startInput = document.getElementById("start-interval");
         const endInput = document.getElementById("end-interval");
 
         flatpickr(startInput, {
             dateFormat: "Y-m-d",
-            onChange: (selectedDates) => {
+            onChange: async (selectedDates) => {
                 this.startDate = selectedDates[0];
-                this.updateTable();
+                await this.updateTable();
             }
         });
 
@@ -116,7 +116,7 @@ export class IncomeExpense {
             try {
                 const result = await HttpUtils.request(`/operations?${params}`, "GET", true);
                 const data = result.response || [];
-                this.drawTable(data);
+                await this.drawTable(data);
             } catch (error) {
                 console.error("Ошибка при обновлении таблицы:", error);
             }
@@ -133,7 +133,6 @@ export class IncomeExpense {
                 params.append("dateTo", this.endDate.toISOString().split("T")[0]);
             }
             const result = await HttpUtils.request(`/operations?${params}`, "GET", true);
-            console.log(result);
             return result.response || [];
         } catch (error) {
             console.error("Ошибка запроса:", error);

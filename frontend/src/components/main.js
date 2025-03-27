@@ -1,5 +1,7 @@
 import {AuthUtils} from "../utils/auth-utils";
 import {HttpUtils} from "../utils/http-utils";
+import flatpickr from "../../node_modules/flatpickr/dist/flatpickr.min.js";
+import {Chart} from "../../node_modules/chart.js/dist/chart.js";
 
 export class Main {
     constructor(openNewRoute) {
@@ -20,12 +22,12 @@ export class Main {
     setupButtonListeners() {
         const buttons = document.querySelectorAll(".buttons-layout a");
         buttons.forEach(button => {
-            button.addEventListener("click", (event) => {
-                this.handleButtonClick(event, buttons);
+            button.addEventListener("click", async (event) => {
+                await this.handleButtonClick(event, buttons);
             });
         });
     }
-    handleButtonClick(event, buttons) {
+    async handleButtonClick(event, buttons) {
         buttons.forEach(btn => btn.classList.remove("btn-secondary"));
         buttons.forEach(btn => btn.classList.add("btn-outline-secondary"));
         event.currentTarget.classList.add("btn-secondary");
@@ -55,16 +57,15 @@ export class Main {
                 break;
         }
         if (this.currentPeriod === "interval") {
-            this.updateCharts();
+            await this.updateCharts();
         } else {
-            this.drawPie();
+            await this.drawPie();
         }
     }
 
-    initDatePickers() {
+    async initDatePickers() {
         const startInput = document.getElementById("start-interval");
         const endInput = document.getElementById("end-interval");
-
 
         flatpickr(startInput, {
             dateFormat: "Y-m-d",
@@ -95,7 +96,7 @@ export class Main {
             try {
                 const result = await HttpUtils.request(`/operations?${params}`, "GET", true);
                 const data = result.response || [];
-                this.drawPie(data);
+                await this.drawPie(data);
             } catch (error) {
                 console.error("Ошибка при обновлении графиков:", error);
             }
