@@ -1,6 +1,6 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
-
+import flatpickr from "../../../node_modules/flatpickr/dist/flatpickr.min.js";
 export class Create {
     constructor(openNewRoute) {
         this.typeElement = document.getElementById('type');
@@ -8,6 +8,7 @@ export class Create {
         this.amountElement = document.getElementById('amount');
         this.dateElement = document.getElementById('date');
         this.commentaryElement = document.getElementById('commentary');
+        this.initDatePicker();
         this.openNewRoute = openNewRoute;
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             return this.openNewRoute('/sign-in');
@@ -20,6 +21,7 @@ export class Create {
     async onTypeChange() {
         const selectedType = this.typeElement.value.trim();
         this.categoryElement.innerHTML = "";
+        this.categoriesList = [];
         let categories = [];
 
         if (selectedType === "income") {
@@ -29,8 +31,9 @@ export class Create {
         }
 
         categories.forEach(category => {
+            this.categoriesList.push({ id: category.id, title: category.title });
             let option = document.createElement('option');
-            option.value = category.id;
+            option.value = category.title;
             option.text = category.title;
             this.categoryElement.appendChild(option);
         });
@@ -74,6 +77,15 @@ export class Create {
         return isValid;
     }
 
+    initDatePicker() {
+        flatpickr(this.dateElement, {
+            dateFormat: "Y-m-d",
+            enableTime: false,
+            defaultDate: new Date(),
+        });
+    }
+
+
     async setSelectValue() {
         const urlParams = new URLSearchParams(window.location.search);
         const type = urlParams.get("type");
@@ -85,7 +97,7 @@ export class Create {
 
     async createNewInfo() {
         let type = this.typeElement.value.trim();
-        const category_id = this.categoryElement.value;
+        const categoryTitle = this.categoryElement.value;
         const amount = Number(this.amountElement.value);
         const date = this.dateElement.value.trim();
         const comment = this.commentaryElement.value.trim();
@@ -94,6 +106,14 @@ export class Create {
         } else if (type === "Расход") {
             type = "expense";
         }
+
+        const category = this.categoriesList.find(c => c.title === categoryTitle);
+        if (!category) {
+            console.error("Ошибка: Не удалось найти ID категории");
+            return;
+        }
+        const category_id = category.id;
+
         const isValid = this.validateData(type, category_id, amount, date, comment);
         if (!isValid) {
             return;
@@ -101,7 +121,7 @@ export class Create {
         try {
             const result = await HttpUtils.request("/operations", "POST", true, {
                 type,
-                category_id : category_id,
+                category_id,
                 amount,
                 date,
                 comment,

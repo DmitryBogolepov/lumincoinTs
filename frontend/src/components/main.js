@@ -2,6 +2,7 @@ import {AuthUtils} from "../utils/auth-utils";
 import {HttpUtils} from "../utils/http-utils";
 import flatpickr from "../../node_modules/flatpickr/dist/flatpickr.min.js";
 import {Chart} from "../../node_modules/chart.js/dist/chart.js";
+import {registerables} from "chart.js";
 
 export class Main {
     constructor(openNewRoute) {
@@ -142,6 +143,7 @@ export class Main {
     }
 
     createChart(canvasId, label, items, existingChart) {
+        Chart.register(...registerables);
         const ctx = document.getElementById(canvasId)?.getContext("2d");
         if (!ctx) return;
         if (existingChart) {

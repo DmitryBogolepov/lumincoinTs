@@ -150,7 +150,6 @@ export class IncomeExpense {
         data.forEach((item, index) => {
             let typeText = "";
             let typeColor = "";
-            let categoryText = '—';
 
             if (item.type === "income") {
                 typeText = "Доход";
@@ -162,14 +161,7 @@ export class IncomeExpense {
                 typeText = "Неизвестно";
                 typeColor = "text-muted";
             }
-
-            const category = this.categories.find(cat => cat.id === item.category_id);
-            console.log(category)
-            if (category) {
-                categoryText = category.title;
-            } else {
-                console.warn(`Категория с id ${item.category_id} не найдена`);
-            }
+            const categoryText = item.category || '—';
 
             const row = document.createElement("tr");
             row.classList.add("table-row");
