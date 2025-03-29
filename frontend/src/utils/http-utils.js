@@ -18,7 +18,7 @@ export class HttpUtils {
         if (useAuth) {
             token = AuthUtils.getAuthInfo(AuthUtils.accessTokenKey);
             if(token) {
-                params.headers['authorization'] = token;
+                params.headers['x-auth-token'] = `${token}`;
             }
         }
         if (body) {
@@ -36,19 +36,19 @@ export class HttpUtils {
             result.error = true;
             if (useAuth && response.status === 401) {
                 if (!token) {
-                    result.redirect = '/login';
+                    result.redirect = '/sign-in';
                 } else {
                     const updateTokenResult = await AuthUtils.updateRefreshToken();
                     if (updateTokenResult) {
                         return this.request(url,method,useAuth,body);
                     } else {
-                        result.redirect = '/login';
+                        AuthUtils.removeAuthInfo();
+                        result.redirect = '/sign-in';
                     }
                 }
 
             }
         }
-
         return result;
     }
 }

@@ -1,13 +1,19 @@
 <div class="container">
   <h1 class="finance-title">Редактирование дохода/расхода</h1>
   <form action="#">
-    <input type="text" class="finance-input form-control" placeholder="Тип...">
-    <input type="text" class="finance-input form-control" placeholder="Категория...">
-    <input type="text" class="finance-input form-control" placeholder="Сумма в $...">
-    <input type="text" class="finance-input form-control" placeholder="Дата...">
-    <input type="text" class="finance-input form-control" placeholder="Комментарий...">
+    <select class="finance-input form-control" id="type">
+      <option value="" disabled selected hidden>Выберите тип...</option>
+      <option value="income">Доход</option>
+      <option value="expense">Расход</option>
+    </select>
+    <select class="finance-input form-control" id="category">
+      <option value="" disabled selected hidden>Выберите категорию...</option>
+    </select>
+    <input type="text" class="finance-input form-control" placeholder="Сумма в $..." id="amount">
+    <input type="text" class="finance-input form-control" placeholder="Дата..." id="date">
+    <input type="text" class="finance-input form-control" placeholder="Комментарий..." id="commentary">
     <div class="layout d-flex align-items-center mt-3" >
-      <a href="javascript:void(0)" class="create-btn btn btn-success">Создать</a>
+      <a href="javascript:void(0)" class="create-btn btn btn-success" id="process-button">Создать</a>
       <a href="/income-expenses" class="cancel-btn btn btn-danger">Отмена</a>
     </div>
   </form>

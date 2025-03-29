@@ -1,32 +1,88 @@
+import {HttpUtils} from "../utils/http-utils";
+
 export class Layout {
     constructor() {
         this.modal = document.getElementById("user-modal");
-        this.userNameElement = document.getElementById('user-name');
-        this.userBalanceElement = document.getElementById('balance');
-        this.navLinksElement = document.querySelectorAll('.sidebar .nav-link')
+
         this.initModal();
     }
 
-    static linksLogic() {
-        this.navLinksElement.forEach(link => {
+    static linksLogic(navLinksElement, urlRoute) {
+        navLinksElement.forEach(link => {
             if (link.getAttribute('href') === urlRoute) {
                 link.classList.add('active');
             } else {
                 link.classList.remove('active');
             }
         });
+
+        const categoryLink = document.getElementById("categoryDropdown");
+        const arrow = document.getElementById("arrow");
+        const block = document.getElementById("dropdown-block");
+        const dropdownLinks = document.querySelectorAll(".dropdown-item");
+        let isDropdownActive = false;
+
+        dropdownLinks.forEach(link => {
+            if (link.getAttribute('href') === urlRoute) {
+                link.classList.add('active');
+                isDropdownActive = true;
+            } else {
+                link.classList.remove('active');
+            }
+        });
+
+        if (isDropdownActive) {
+            block.classList.add("selected");
+            categoryLink.classList.add('active');
+            arrow.classList.add('rotated');
+            dropdownLinks.forEach(link => link.style.display = "block");
+        } else {
+            block.classList.remove("selected");
+            categoryLink.classList.remove('active');
+            arrow.classList.remove('rotated');
+            dropdownLinks.forEach(link => link.style.display = "none");
+        }
+
+        categoryLink.addEventListener("click", () => {
+            const isSelected = block.classList.contains('selected');
+            if (isSelected) {
+                block.classList.remove('selected');
+                categoryLink.classList.remove('active');
+                arrow.classList.remove('rotated');
+                dropdownLinks.forEach(link => link.style.display = "none");
+            } else {
+                block.classList.add("selected");
+                categoryLink.classList.add('active');
+                arrow.classList.add('rotated');
+                dropdownLinks.forEach(link => link.style.display = "block");
+            }
+        });
     }
 
 
-    static setUserData(userInfo) {
+    static async updateBalance(balanceItem) {
+        try {
+            const result = await HttpUtils.request('/balance', 'GET', true);
+            if (result.error) {
+                balanceItem.innerText = "Ошибка загрузки";
+            } else {
+                balanceItem.innerText = `${result.response.balance.toString()} $`;
+            }
+        } catch (error) {
+            balanceItem.innerText = "Ошибка загрузки";
+        }
+    }
+
+
+    static setUserData(userInfo,userName) {
         if (userInfo) {
-            if (this.userNameElement) {
-                this.userNameElement.innerText = `${userInfo.name} ${userInfo.lastName}`;
+            if (userName) {
+                userName.innerText = `${userInfo.name} ${userInfo.lastName}`;
             }
         }
     }
 
-    static initModal() {
+     initModal() {
         const userAction = document.getElementById("user-click");
         const closeModal = document.getElementById("close-modal");
 

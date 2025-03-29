@@ -9,9 +9,10 @@ import {ExpensesChange} from "./components/finances/expenses-change";
 import {IncomeAdd} from "./components/finances/income-add";
 import {IncomeChange} from "./components/finances/income-change";
 import {Create} from "./components/finances/create";
-import {Change} from "./components/finances/Change";
+import {Change} from "./components/finances/change";
 import {IncomeExpense} from "./components/finances/income-expenses";
 import {AuthUtils} from "./utils/auth-utils";
+import {Layout} from "./components/layout";
 
 
 export class Router {
@@ -169,24 +170,7 @@ export class Router {
         }
     }
 
-    async activateRoute(e, oldRoute=null) {
-        // if( oldRoute ) {
-        //     const currentRoute = this.routes.find(item => item.route === oldRoute);
-        //     if (currentRoute.styles && currentRoute.styles.length > 0) {
-        //         currentRoute.styles.forEach(style => {
-        //             document.querySelector(`link[href='/css/${style}']`).remove();
-        //         });
-        //     }
-        //     if (currentRoute.scripts && currentRoute.scripts.length > 0) {
-        //         currentRoute.scripts.forEach(script => {
-        //             document.querySelector(`script[src='/js/${script}']`).remove();
-        //         });
-        //     }
-        //     if (currentRoute.unload && typeof currentRoute.unload === "function") {
-        //         currentRoute.unload();
-        //     }
-        // }
-
+    async activateRoute() {
         const urlRoute = window.location.pathname;
         const newRoute = this.routes.find(item => item.route === urlRoute);
         if (newRoute) {
@@ -194,17 +178,6 @@ export class Router {
                 console.warn(`Маршрут ${urlRoute} не найден.`);
                 return;
             }
-            // if(newRoute.styles && newRoute.styles.length > 0) {
-            //     newRoute.styles.forEach(style => {
-            //         FileUtils.loadPageStyle('/css/' + style);
-            //     });
-            // }
-            //
-            // if(newRoute.scripts && newRoute.scripts.length > 0) {
-            //     for (const script of newRoute.scripts) {
-            //         await FileUtils.loadPageScript('/js/'+ script);
-            //     }
-            // }
             if (newRoute.title) {
                 this.titlePageElement.innerText = newRoute.title;
             }
@@ -216,47 +189,23 @@ export class Router {
                     contentBlock = document.getElementById('content-layout');
                 }
                 contentBlock.innerHTML = await fetch(newRoute.filePathTemplate).then(response => response.text());
+                new Layout();
+                const userInfo = JSON.parse(AuthUtils.getAuthInfo(AuthUtils.userInfoTokenKey));
+                if (userInfo && newRoute.useLayout) {
+                    const username = document.getElementById('user-name');
+                    Layout.setUserData(userInfo,username);
+                    const balanceElement = document.getElementById('balance');
+                    const navLinksElement = document.querySelectorAll('.sidebar .nav-link');
+                    Layout.linksLogic(navLinksElement, urlRoute)
+                    if (balanceElement) {
+                        await Layout.updateBalance(balanceElement);
+                    }
+                 }
             }
             if (newRoute.load && typeof newRoute.load === "function") {
                 newRoute.load();
             }
 
-            //Вынести в layout.js
-            const userInfo = JSON.parse(AuthUtils.getAuthInfo(AuthUtils.userInfoTokenKey));
-            if (userInfo) {
-                document.getElementById('user-name').innerText = userInfo.name+' '+ userInfo.lastName;
-            }
-            this.initModal();
-        }
-    }
-
-
-
-
-    initModal() {
-        const userAction = document.getElementById("user-click");
-        const modal = document.getElementById("user-modal");
-        const closeModal = document.getElementById("close-modal");
-
-        if (userAction && modal) {
-            userAction.addEventListener("click", function (event) {
-                event.preventDefault();
-                modal.style.display = "flex";
-            });
-        }
-
-        if (closeModal && modal) {
-            closeModal.addEventListener("click", function () {
-                modal.style.display = "none";
-            });
-        }
-
-        if (modal) {
-            window.addEventListener("click", function (event) {
-                if (event.target === modal) {
-                    modal.style.display = "none";
-                }
-            });
         }
     }
 }

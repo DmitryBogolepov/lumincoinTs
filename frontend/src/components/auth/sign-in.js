@@ -46,6 +46,7 @@ export class SignIn {
                 result.response.tokens.refreshToken,
                 result.response.user
             );
+
             this.openNewRoute("/");
         }
     }

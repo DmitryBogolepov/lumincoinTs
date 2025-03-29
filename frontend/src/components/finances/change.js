@@ -1,42 +1,67 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
-import flatpickr from "../../../node_modules/flatpickr/dist/flatpickr.min.js";
-export class Create {
+
+export class Change {
     constructor(openNewRoute) {
         this.typeElement = document.getElementById('type');
         this.categoryElement = document.getElementById('category');
         this.amountElement = document.getElementById('amount');
         this.dateElement = document.getElementById('date');
         this.commentaryElement = document.getElementById('commentary');
-        this.initDatePicker();
         this.openNewRoute = openNewRoute;
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             return this.openNewRoute('/sign-in');
         }
-        this.setSelectValue();
+        this.loadData();
         this.typeElement.addEventListener('change', this.onTypeChange.bind(this));
         document.getElementById('process-button').addEventListener('click', this.createNewInfo.bind(this));
+    }
+
+    async loadData() {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+        if (id) {
+            try {
+                const result = await HttpUtils.request(`/operations/${id}`, "GET", true);
+                if (result.response) {
+                    this.populateForm(result.response);
+                }
+            } catch (error) {
+                console.error("Ошибка при загрузке данных операции:", error);
+            }
+        }
+    }
+
+    populateForm(data) {
+        this.typeElement.value = data.type;
+        this.amountElement.value = data.amount;
+        this.dateElement.value = data.date;
+        this.commentaryElement.value = data.comment || '';
+
+        this.onTypeChange();
+        this.categoryElement.value = data.category_id;
     }
 
     async onTypeChange() {
         const selectedType = this.typeElement.value.trim();
         this.categoryElement.innerHTML = "";
-        this.categoriesList = [];
-        let categories = [];
-
         if (selectedType === "income") {
-            categories = await this.getIncomeCategories();
+            const categories = await this.getIncomeCategories();
+            categories.forEach(category => {
+                let option = document.createElement('option');
+                option.value = category.title;
+                option.text = category.title;
+                this.categoryElement.appendChild(option);
+            });
         } else if (selectedType === "expense") {
-            categories = await this.getExpenseCategories();
+            const categories = await this.getExpenseCategories();
+            categories.forEach(category => {
+                let option = document.createElement('option');
+                option.value = category.title;
+                option.text = category.title;
+                this.categoryElement.appendChild(option);
+            })
         }
-
-        categories.forEach(category => {
-            this.categoriesList.push({ id: category.id, title: category.title });
-            let option = document.createElement('option');
-            option.value = category.title;
-            option.text = category.title;
-            this.categoryElement.appendChild(option);
-        });
     }
 
     validateData(type, category, amount, date, comment) {
@@ -77,49 +102,22 @@ export class Create {
         return isValid;
     }
 
-    initDatePicker() {
-        flatpickr(this.dateElement, {
-            dateFormat: "Y-m-d",
-            enableTime: false,
-            defaultDate: new Date(),
-        });
-    }
-
-
-    async setSelectValue() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const type = urlParams.get("type");
-        if (type) {
-            this.typeElement.value = type;
-            await this.onTypeChange();
-        }
-    }
-
     async createNewInfo() {
-        let type = this.typeElement.value.trim();
-        const categoryTitle = this.categoryElement.value;
+        const type = this.typeElement.value.trim();
+        const category_id = Number(this.categoryElement.value);
         const amount = Number(this.amountElement.value);
         const date = this.dateElement.value.trim();
         const comment = this.commentaryElement.value.trim();
-        if (type === "Доход") {
-            type = "income";
-        } else if (type === "Расход") {
-            type = "expense";
-        }
-
-        const category = this.categoriesList.find(c => c.title === categoryTitle);
-        if (!category) {
-            console.error("Ошибка: Не удалось найти ID категории");
-            return;
-        }
-        const category_id = category.id;
-
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+        if (!id) return;
         const isValid = this.validateData(type, category_id, amount, date, comment);
         if (!isValid) {
+            alert("Ошибка валидации, проверьте введенные данные.");
             return;
         }
         try {
-            const result = await HttpUtils.request("/operations", "POST", true, {
+            const result = await HttpUtils.request(`/operations/${id}`, "PUT", true, {
                 type,
                 category_id,
                 amount,
@@ -127,7 +125,8 @@ export class Create {
                 comment,
             });
             if (result.error || !result.response) {
-                console.error("Ошибка при запросе:", result.error.value);
+                alert("Произошла ошибка при отправке данных.");
+                return;
             } else {
                 this.openNewRoute("/income-expenses")
             }
@@ -135,17 +134,15 @@ export class Create {
             console.error("Ошибка при запросе:", error);
         }
     }
-
     async getIncomeCategories() {
-        const categories = await HttpUtils.request("/categories/income");
+        const categories =await HttpUtils.request("/categories/income");
         if (categories.error || !categories.response) {
             return;
         }
         return categories.response;
     }
-
     async getExpenseCategories() {
-        const categories = await HttpUtils.request("/categories/expense");
+        const categories =await HttpUtils.request("/categories/expense");
         if (categories.error || !categories.response) {
             return;
         }
