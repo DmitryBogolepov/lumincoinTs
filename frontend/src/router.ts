@@ -13,9 +13,14 @@ import {Change} from "./components/finances/change";
 import {IncomeExpense} from "./components/finances/income-expenses";
 import {AuthUtils} from "./utils/auth-utils";
 import {Layout} from "./components/layout";
+import {RouteType} from "./types/route.type";
+import {AuthInfo} from "./types/Auth-tokens-response.type";
 
 
 export class Router {
+    private titlePageElement : HTMLElement | null;
+    readonly contentPageElement: HTMLElement | null;
+    private routes:RouteType[];
     constructor() {
         this.titlePageElement = document.getElementById('title');
         this.contentPageElement = document.getElementById('content');
@@ -137,31 +142,32 @@ export class Router {
             },
         ]
     }
-    initEvents() {
+    private initEvents():void {
         window.addEventListener("DOMContentLoaded", this.activateRoute.bind(this));
         window.addEventListener("popstate", this.activateRoute.bind(this));
         document.addEventListener("click", this.clickHandler.bind(this));
     }
 
-    async openNewRoute(url) {
-        const currentRoute = window.location.pathname;
+    public async openNewRoute(url:string):Promise<void> {
+        const currentRoute:string = window.location.pathname;
         history.pushState({}, '', url);
-        await this.activateRoute(null, currentRoute);
+        await this.activateRoute(currentRoute);
     }
 
-    async clickHandler(e) {
-        let element = null;
-        if (e.target.nodeName === 'A') {
-            element = e.target;
+    async clickHandler(e:Event):Promise<void> {
+        const target = e.target as HTMLElement;
+        let element:HTMLAnchorElement | null = null;
+        if (target.tagName === "A") {
+            element = target as HTMLAnchorElement;
 
-        } else if (e.target.parentNode.nodeName === 'A') {
-            element = e.target.parentNode;
+        } else if (target.parentElement?.tagName === "A") {
+            element = target.parentElement as HTMLAnchorElement;
         }
 
         if (element) {
             e.preventDefault();
             const currentRoute = window.location.pathname;
-            const url = element.href.replace(window.location.origin, '');
+            const url:string = element.href.replace(window.location.origin, '');
 
             if (!url || (currentRoute === url.replace('#', '')) || url.startsWith("javascript:void(0)")) {
                 return;
@@ -170,9 +176,9 @@ export class Router {
         }
     }
 
-    async activateRoute() {
-        const urlRoute = window.location.pathname;
-        const newRoute = this.routes.find(item => item.route === urlRoute);
+    async activateRoute(previousRoute?: string):Promise<void> {
+        const urlRoute:string = window.location.pathname;
+        const newRoute:RouteType = this.routes.find(item => item.route === urlRoute);
         if (newRoute) {
             if (!newRoute) {
                 console.warn(`Маршрут ${urlRoute} не найден.`);
@@ -181,21 +187,20 @@ export class Router {
             if (newRoute.title) {
                 this.titlePageElement.innerText = newRoute.title;
             }
-
             if (newRoute.filePathTemplate) {
-                let contentBlock = this.contentPageElement;
+                let contentBlock:HTMLElement | null = this.contentPageElement;
                 if (newRoute.useLayout) {
-                    this.contentPageElement.innerHTML = await fetch(newRoute.useLayout).then(response => response.text());
+                    this.contentPageElement.innerHTML = await fetch(newRoute.useLayout as string).then(response => response.text());
                     contentBlock = document.getElementById('content-layout');
                 }
                 contentBlock.innerHTML = await fetch(newRoute.filePathTemplate).then(response => response.text());
                 new Layout();
-                const userInfo = JSON.parse(AuthUtils.getAuthInfo(AuthUtils.userInfoTokenKey));
+                const userInfo:AuthInfo = AuthUtils.getAuthInfo(AuthUtils.userInfoTokenKey);
                 if (userInfo && newRoute.useLayout) {
-                    const username = document.getElementById('user-name');
+                    const username:HTMLElement | null = document.getElementById('user-name');
                     Layout.setUserData(userInfo,username);
-                    const balanceElement = document.getElementById('balance');
-                    const navLinksElement = document.querySelectorAll('.sidebar .nav-link');
+                    const balanceElement:HTMLElement | null = document.getElementById('balance');
+                    const navLinksElement:NodeListOf<Element> = document.querySelectorAll('.sidebar .nav-link');
                     Layout.linksLogic(navLinksElement, urlRoute)
                     if (balanceElement) {
                         await Layout.updateBalance(balanceElement);

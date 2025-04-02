@@ -1,10 +1,11 @@
 import config from "../config/config";
+import {AuthInfo, UserInfo} from "../types/Auth-tokens-response.type";
 
 export class AuthUtils {
-    static accessTokenKey = "accessToken";
-    static refreshTokenKey = "refreshToken";
-    static userInfoTokenKey = "userInfo";
-    static setAuthInfo(accessToken, refreshToken, userInfo = null) {
+    static accessTokenKey:string = "accessToken";
+    static refreshTokenKey:string = "refreshToken";
+    static userInfoTokenKey:string = "userInfo";
+    static setAuthInfo(accessToken:string, refreshToken:string, userInfo:UserInfo = null):void {
         localStorage.setItem(this.accessTokenKey, accessToken);
         localStorage.setItem(this.refreshTokenKey, refreshToken);
         if (userInfo) {
@@ -12,13 +13,13 @@ export class AuthUtils {
         }
     }
 
-    static removeAuthInfo() {
+    public static removeAuthInfo():void {
         localStorage.removeItem(this.accessTokenKey);
         localStorage.removeItem(this.refreshTokenKey);
         localStorage.removeItem(this.userInfoTokenKey);
     }
 
-    static getAuthInfo(key = null) {
+    public static getAuthInfo(key?:string):AuthInfo {
         if (key && [this.accessTokenKey, this.refreshTokenKey, this.userInfoTokenKey].includes(key)) {
             return localStorage.getItem(key);
         } else {
@@ -29,8 +30,8 @@ export class AuthUtils {
             }
         }
     }
-    static async updateRefreshToken() {
-       let refreshToken = this.getAuthInfo(this.refreshTokenKey);
+    static async updateRefreshToken():Promise<boolean> {
+       let refreshToken:AuthInfo = this.getAuthInfo(this.refreshTokenKey) as string | null;
         if (!refreshToken) {
             return false;
         }

@@ -3,9 +3,10 @@ const path = require('path');
 const CopyPlugin = require("copy-webpack-plugin");
 module.exports = {
     mode: "development",
-    entry: './src/app.js',
+    entry: './src/app.ts',
+
     output: {
-        filename: 'app.js',
+        filename: 'app.ts',
         path: path.resolve(__dirname, 'dist'),
     },
     devServer: {
@@ -19,12 +20,9 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.scss$/i,
-                use: [
-                    "style-loader",
-                    "css-loader",
-                    "sass-loader",
-                ],
+                test: /\.tsx?$/,
+                use: 'ts-loader',
+                exclude: /node_modules/,
             },
         ],
     },

@@ -1,20 +1,25 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
-
+import {OpenNewRouteType} from "../../types/open-route.type";
 export class SignIn {
-    constructor(openNewRoute) {
+    readonly openNewRoute: OpenNewRouteType;
+    emailElement:HTMLInputElement | null;
+    passwordElement:HTMLInputElement | null;
+    rememberMeElement:HTMLInputElement | null;
+    constructor(openNewRout:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         if (AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
-            return this.openNewRoute('/');
+            this.openNewRoute('/');
+            return
         }
-        this.emailElement = document.getElementById('email');
-        this.passwordElement = document.getElementById('password');
-        this.rememberMeElement = document.getElementById('remember-me');
+        this.emailElement = document.getElementById('email') as HTMLInputElement;
+        this.passwordElement = document.getElementById('password') as HTMLInputElement;
+        this.rememberMeElement = document.getElementById('remember-me') as HTMLInputElement;
         document.getElementById('process-button').addEventListener('click', this.login.bind(this));
     }
 
-    validateForm() {
-        let isValid = true;
+    validateForm():boolean {
+        let isValid:boolean = true;
         if (this.emailElement.value && this.emailElement.value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
             this.emailElement.classList.remove('is-invalid');
         } else {
@@ -30,7 +35,7 @@ export class SignIn {
         return isValid;
     }
 
-    async login() {
+    async login():Promise<void> {
         if (this.validateForm()) {
             const result = await HttpUtils.request('/login', 'POST', false, {
                 email: this.emailElement.value,

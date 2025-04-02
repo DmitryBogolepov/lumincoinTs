@@ -2,14 +2,16 @@ import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
 
 export class Logout {
-    constructor(openNewRoute) {
+    private openNewRoute: (url: string) => Promise<void>;
+    constructor(openNewRoute: (url: string) => Promise<void>) {
         this.openNewRoute = openNewRoute;
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey) || !AuthUtils.getAuthInfo(AuthUtils.refreshTokenKey)) {
-            return this.openNewRoute('/sign-in');
+            this.openNewRoute('/sign-in');
+            return;
         }
         this.logout().then();
     }
-    async logout(){
+    async logout():Promise<void> {
         try {
             await HttpUtils.request('/logout','POST',false,{
                 refreshToken: AuthUtils.getAuthInfo(AuthUtils.refreshTokenKey),
@@ -18,6 +20,6 @@ export class Logout {
             console.error("Ошибка при выходе:", e);
         }
         AuthUtils.removeAuthInfo();
-        this.openNewRoute("/sign-in");
+        await this.openNewRoute("/sign-in");
     }
 }
