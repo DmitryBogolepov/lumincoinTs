@@ -6,7 +6,7 @@ export class SignIn {
     emailElement:HTMLInputElement | null;
     passwordElement:HTMLInputElement | null;
     rememberMeElement:HTMLInputElement | null;
-    constructor(openNewRout:OpenNewRouteType) {
+    constructor(openNewRoute:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         if (AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             this.openNewRoute('/');

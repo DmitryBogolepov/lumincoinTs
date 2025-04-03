@@ -1,24 +1,27 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
 import flatpickr from "../../../node_modules/flatpickr/dist/flatpickr.min.js";
+import {OpenNewRouteType} from "../../types/open-route.type";
 export class Create {
-    constructor(openNewRoute) {
+    readonly openNewRoute: OpenNewRouteType;
+    constructor(openNewRoute:OpenNewRouteType) {
+        this.openNewRoute = openNewRoute;
         this.typeElement = document.getElementById('type');
         this.categoryElement = document.getElementById('category');
         this.amountElement = document.getElementById('amount');
         this.dateElement = document.getElementById('date');
         this.commentaryElement = document.getElementById('commentary');
         this.initDatePicker();
-        this.openNewRoute = openNewRoute;
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
-            return this.openNewRoute('/sign-in');
+            this.openNewRoute('/sign-in');
+            return;
         }
         this.setSelectValue();
         this.typeElement.addEventListener('change', this.onTypeChange.bind(this));
         document.getElementById('process-button').addEventListener('click', this.createNewInfo.bind(this));
     }
 
-    async onTypeChange() {
+    private async onTypeChange():Promise<void> {
         const selectedType = this.typeElement.value.trim();
         this.categoryElement.innerHTML = "";
         this.categoriesList = [];
@@ -32,15 +35,15 @@ export class Create {
 
         categories.forEach(category => {
             this.categoriesList.push({ id: category.id, title: category.title });
-            let option = document.createElement('option');
+            let option:HTMLOptionElement = document.createElement('option');
             option.value = category.title;
             option.text = category.title;
             this.categoryElement.appendChild(option);
         });
     }
 
-    validateData(type, category, amount, date, comment) {
-        let isValid = true;
+    private validateData(type, category, amount, date, comment) {
+        let isValid:boolean = true;
         if (["income", "expense"].includes(type)) {
             this.typeElement.classList.remove('is-invalid');
         } else {
@@ -77,7 +80,7 @@ export class Create {
         return isValid;
     }
 
-    initDatePicker() {
+    private initDatePicker():void {
         flatpickr(this.dateElement, {
             dateFormat: "Y-m-d",
             enableTime: false,
@@ -86,16 +89,16 @@ export class Create {
     }
 
 
-    async setSelectValue() {
+    private async setSelectValue():Promise<void> {
         const urlParams = new URLSearchParams(window.location.search);
-        const type = urlParams.get("type");
+        const type:string = urlParams.get("type");
         if (type) {
             this.typeElement.value = type;
             await this.onTypeChange();
         }
     }
 
-    async createNewInfo() {
+    private async createNewInfo():Promise<void> {
         let type = this.typeElement.value.trim();
         const categoryTitle = this.categoryElement.value;
         const amount = Number(this.amountElement.value);
@@ -114,7 +117,7 @@ export class Create {
         }
         const category_id = category.id;
 
-        const isValid = this.validateData(type, category_id, amount, date, comment);
+        const isValid:boolean = this.validateData(type, category_id, amount, date, comment);
         if (!isValid) {
             return;
         }
@@ -129,7 +132,7 @@ export class Create {
             if (result.error || !result.response) {
                 console.error("Ошибка при запросе:", result.error.value);
             } else {
-                this.openNewRoute("/income-expenses")
+                await this.openNewRoute("/income-expenses")
             }
         } catch (error) {
             console.error("Ошибка при запросе:", error);

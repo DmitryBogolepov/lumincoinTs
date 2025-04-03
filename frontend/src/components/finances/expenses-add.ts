@@ -1,17 +1,22 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
+import {OpenNewRouteType} from "../../types/open-route.type";
 
 export class ExpensesAdd {
-    constructor(openNewRoute) {
+    titleElement:HTMLElement | null;
+    readonly openNewRoute: OpenNewRouteType;
+    constructor(openNewRoute:OpenNewRouteType) {
+        this.openNewRoute = openNewRoute;
         this.titleElement = document.getElementById('title-value');
         this.openNewRoute = openNewRoute;
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
-            return this.openNewRoute('/sign-in');
+            this.openNewRoute('/sign-in');
+            return;
         }
         document.getElementById('create-button').addEventListener('click', this.addNewIncomeItem.bind(this))
     }
 
-    async addNewIncomeItem() {
+    private async addNewIncomeItem():Promise<void> {
         if (this.titleElement.value && this.titleElement.value.length > 0) {
             try {
                 const result = await HttpUtils.request("/categories/expense", "POST", true, {
@@ -24,6 +29,6 @@ export class ExpensesAdd {
                 console.error("Ошибка при запросе:", error);
             }
         }
-        this.openNewRoute('/expenses');
+        await this.openNewRoute('/expenses');
     }
 }

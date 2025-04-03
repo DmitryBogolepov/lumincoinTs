@@ -1,13 +1,17 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
+import {OpenNewRouteType} from "../../types/open-route.type";
 
 export class ExpensesChange {
-    constructor(openNewRoute) {
+    titleElement:HTMLElement | null;
+    readonly openNewRoute: OpenNewRouteType;
+    constructor(openNewRoute:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         this.titleElement = document.getElementById("title-value");
         this.getItemText();
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
-            return this.openNewRoute('/sign-in');
+            this.openNewRoute('/sign-in');
+            return;
         }
         const changeButton = document.getElementById("change-button");
         if (changeButton) {
@@ -17,7 +21,7 @@ export class ExpensesChange {
         }
     }
 
-    async getItemText() {
+    private async getItemText() {
         const params = new URLSearchParams(window.location.search);
         const id = params.get("id");
         if (!id) return;
@@ -35,9 +39,9 @@ export class ExpensesChange {
         }
     }
 
-    async changeExpensesItem() {
+    private async changeExpensesItem():Promise<void> {
         const params = new URLSearchParams(window.location.search);
-        const id = params.get("id");
+        const id:string = params.get("id");
         if (!id) return;
         if (this.titleElement.value && this.titleElement.value.length > 0) {
             try {
@@ -51,6 +55,6 @@ export class ExpensesChange {
                 console.error("Ошибка при запросе:", error);
             }
         }
-        this.openNewRoute('/expenses');
+        await this.openNewRoute('/expenses');
     }
 }

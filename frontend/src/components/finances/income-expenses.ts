@@ -1,18 +1,19 @@
 import { AuthUtils } from "../../utils/auth-utils";
 import { HttpUtils } from "../../utils/http-utils";
 import flatpickr from "../../../node_modules/flatpickr/dist/flatpickr.min.js";
+import {OpenNewRouteType} from "../../types/open-route.type";
 export class IncomeExpense {
-    constructor(openNewRoute) {
+    readonly openNewRoute: OpenNewRouteType;
+    constructor(openNewRoute:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         this.currentPeriod = "all";
         this.startDate = null;
         this.endDate = null;
         this.categories = [];
-
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
-            return this.openNewRoute('/sign-in');
+            this.openNewRoute('/sign-in');
+            return;
         }
-
         this.loadCategories();
         this.setupButtonListeners();
         this.initDatePickers();
@@ -20,7 +21,7 @@ export class IncomeExpense {
         this.initDeleteButtons();
     }
 
-    async loadCategories() {
+    async loadCategories():Promise<void> {
         try {
             const incomeResult = await HttpUtils.request("/categories/income", "GET", true);
             const expenseResult = await HttpUtils.request("/categories/expense", "GET", true);
@@ -37,16 +38,16 @@ export class IncomeExpense {
         }
     }
 
-    setupButtonListeners() {
+    setupButtonListeners():void {
         const buttons = document.querySelectorAll(".buttons-layout a");
         buttons.forEach(button => {
-            button.addEventListener("click", async (event) => {
+            button.addEventListener("click", async (event:Event):Promise<void> => {
                 await this.handleButtonClick(event, buttons);
             });
         });
     }
 
-    async handleButtonClick(event, buttons) {
+    async handleButtonClick(event, buttons):Promise<void> {
         buttons.forEach(btn => btn.classList.remove("btn-secondary"));
         buttons.forEach(btn => btn.classList.add("btn-outline-secondary"));
         event.currentTarget.classList.add("btn-secondary");
@@ -84,13 +85,13 @@ export class IncomeExpense {
         }
     }
 
-    async initDatePickers() {
-        const startInput = document.getElementById("start-interval");
-        const endInput = document.getElementById("end-interval");
+    async initDatePickers():Promise<void> {
+        const startInput:HTMLElement | null = document.getElementById("start-interval");
+        const endInput:HTMLElement | null  = document.getElementById("end-interval");
 
         flatpickr(startInput, {
             dateFormat: "Y-m-d",
-            onChange: async (selectedDates) => {
+            onChange: async (selectedDates):void => {
                 this.startDate = selectedDates[0];
                 await this.updateTable();
             }
@@ -98,14 +99,14 @@ export class IncomeExpense {
 
         flatpickr(endInput, {
             dateFormat: "Y-m-d",
-            onChange: (selectedDates) => {
+            onChange: (selectedDates):void => {
                 this.endDate = selectedDates[0];
                 this.updateTable();
             }
         });
     }
 
-    async updateTable() {
+    async updateTable():Promise<void> {
         if (this.startDate && this.endDate) {
             const params = new URLSearchParams({
                 period: this.currentPeriod,
@@ -140,16 +141,16 @@ export class IncomeExpense {
         }
     }
 
-    async drawTable(data = null) {
+    async drawTable(data = null):Promise<void> {
         if (!data) {
             data = await this.getAllData();
         }
         const tbody = document.querySelector(".table tbody");
         tbody.innerHTML = "";
 
-        data.forEach((item, index) => {
-            let typeText = "";
-            let typeColor = "";
+        data.forEach((item, index:number):void => {
+            let typeText:string = "";
+            let typeColor:string = "";
 
             if (item.type === "income") {
                 typeText = "Доход";
@@ -163,7 +164,7 @@ export class IncomeExpense {
             }
             const categoryText = item.category || '—';
 
-            const row = document.createElement("tr");
+            const row:HTMLTableRowElement | null = document.createElement("tr");
             row.classList.add("table-row");
             row.setAttribute("data-id", item.id);
             row.innerHTML = `
@@ -193,7 +194,7 @@ export class IncomeExpense {
         });
     }
 
-    initDeleteButtons() {
+    private initDeleteButtons():void {
         document.addEventListener("click", (event) => {
             const deleteButton = event.target.closest(".delete-btn");
             if (deleteButton) {
@@ -204,12 +205,12 @@ export class IncomeExpense {
                 deleteModal.show();
             }
         });
-        document.getElementById("confirmDelete").addEventListener("click", async () => {
+        document.getElementById("confirmDelete").addEventListener("click", async ():Promise<void> => {
             if (this.currentDeleteTarget) {
                 try {
                     const response = await HttpUtils.request(`/operations/${this.currentDeleteId}`, "DELETE", true);
                     if (!response.error) {
-                        const modalElement = document.getElementById("deleteModal");
+                        const modalElement:HTMLElement | null = document.getElementById("deleteModal");
                         const modalInstance = bootstrap.Modal.getInstance(modalElement);
                         modalInstance.hide();
                         await this.drawTable();

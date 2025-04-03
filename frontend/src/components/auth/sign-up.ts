@@ -1,8 +1,10 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
+import {OpenNewRouteType} from "../../types/open-route.type";
 
 export class SignUp {
-    constructor(openNewRoute) {
+    readonly openNewRoute: OpenNewRouteType;
+    constructor(openNewRoute:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
 
         if (AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {

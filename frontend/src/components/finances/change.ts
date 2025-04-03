@@ -1,8 +1,11 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
+import {OpenNewRouteType} from "../../types/open-route.type";
 
 export class Change {
-    constructor(openNewRoute) {
+    readonly openNewRoute: OpenNewRouteType;
+    constructor(openNewRoute:OpenNewRouteType) {
+        this.openNewRoute = openNewRoute;
         this.typeElement = document.getElementById('type');
         this.categoryElement = document.getElementById('category');
         this.amountElement = document.getElementById('amount');
@@ -17,9 +20,9 @@ export class Change {
         document.getElementById('process-button').addEventListener('click', this.createNewInfo.bind(this));
     }
 
-    async loadData() {
+    private async loadData():Promise<void> {
         const params = new URLSearchParams(window.location.search);
-        const id = params.get("id");
+        const id:string = params.get("id");
         if (id) {
             try {
                 const result = await HttpUtils.request(`/operations/${id}`, "GET", true);
@@ -32,7 +35,7 @@ export class Change {
         }
     }
 
-    populateForm(data) {
+    private populateForm(data):void {
         this.typeElement.value = data.type;
         this.amountElement.value = data.amount;
         this.dateElement.value = data.date;
@@ -42,7 +45,7 @@ export class Change {
         this.categoryElement.value = data.category_id;
     }
 
-    async onTypeChange() {
+    private async onTypeChange():Promise<void> {
         const selectedType = this.typeElement.value.trim();
         this.categoryElement.innerHTML = "";
         if (selectedType === "income") {
@@ -64,8 +67,8 @@ export class Change {
         }
     }
 
-    validateData(type, category, amount, date, comment) {
-        let isValid = true;
+    private validateData(type, category, amount, date, comment):boolean {
+        let isValid:boolean = true;
         if (["income", "expense"].includes(type)) {
             this.typeElement.classList.remove('is-invalid');
         } else {
@@ -102,16 +105,16 @@ export class Change {
         return isValid;
     }
 
-    async createNewInfo() {
+    private async createNewInfo():Promise<void> {
         const type = this.typeElement.value.trim();
-        const category_id = Number(this.categoryElement.value);
-        const amount = Number(this.amountElement.value);
+        const category_id:number = Number(this.categoryElement.value);
+        const amount:number = Number(this.amountElement.value);
         const date = this.dateElement.value.trim();
         const comment = this.commentaryElement.value.trim();
         const params = new URLSearchParams(window.location.search);
-        const id = params.get("id");
+        const id:string = params.get("id");
         if (!id) return;
-        const isValid = this.validateData(type, category_id, amount, date, comment);
+        const isValid:boolean = this.validateData(type, category_id, amount, date, comment);
         if (!isValid) {
             alert("Ошибка валидации, проверьте введенные данные.");
             return;
@@ -128,20 +131,20 @@ export class Change {
                 alert("Произошла ошибка при отправке данных.");
                 return;
             } else {
-                this.openNewRoute("/income-expenses")
+                await this.openNewRoute("/income-expenses")
             }
         } catch (error) {
             console.error("Ошибка при запросе:", error);
         }
     }
-    async getIncomeCategories() {
+    private async getIncomeCategories() {
         const categories =await HttpUtils.request("/categories/income");
         if (categories.error || !categories.response) {
             return;
         }
         return categories.response;
     }
-    async getExpenseCategories() {
+    private async getExpenseCategories() {
         const categories =await HttpUtils.request("/categories/expense");
         if (categories.error || !categories.response) {
             return;

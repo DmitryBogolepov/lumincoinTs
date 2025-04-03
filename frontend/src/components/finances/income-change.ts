@@ -1,17 +1,20 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
+import {OpenNewRouteType} from "../../types/open-route.type";
 
 export class IncomeChange {
-    constructor(openNewRoute) {
-        this.titleElement = document.getElementById("title-value");
+    readonly openNewRoute: OpenNewRouteType;
+    titleElement:HTMLElement | null;
+    constructor(openNewRoute:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         this.getItemText();
         this.titleElement = document.getElementById("title-value");
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
-            return this.openNewRoute('/sign-in');
+            this.openNewRoute('/sign-in');
+            return ;
         }
 
-        const changeButton = document.getElementById("change-button");
+        const changeButton:HTMLElement | null = document.getElementById("change-button");
         if (changeButton) {
             changeButton.addEventListener("click", this.changeIncomeItem.bind(this));
         } else {
@@ -21,7 +24,7 @@ export class IncomeChange {
 
     async getItemText() {
         const params = new URLSearchParams(window.location.search);
-        const id = params.get("id");
+        const id:string = params.get("id");
         if (!id) return;
         try {
             const result = await HttpUtils.request(`/categories/income/${id}`, "GET");
@@ -37,9 +40,9 @@ export class IncomeChange {
         }
     }
 
-    async changeIncomeItem() {
+    async changeIncomeItem():Promise<void> {
         const params = new URLSearchParams(window.location.search);
-        const id = params.get("id");
+        const id:string = params.get("id");
         if (this.titleElement.value && this.titleElement.value.length > 0) {
             try {
                 const result = await HttpUtils.request(`/categories/income/${id}`, "PUT", true, {
@@ -52,6 +55,6 @@ export class IncomeChange {
                 console.error("Ошибка при запросе:", error);
             }
         }
-        this.openNewRoute("/income");
+        await this.openNewRoute("/income");
     }
 }
