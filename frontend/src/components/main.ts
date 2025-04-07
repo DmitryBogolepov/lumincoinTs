@@ -1,11 +1,17 @@
 import {AuthUtils} from "../utils/auth-utils";
 import {HttpUtils} from "../utils/http-utils";
-import flatpickr from "../../node_modules/flatpickr/dist/flatpickr.min.js";
-import {Chart} from "../../node_modules/chart.js/dist/chart.js";
+import flatpickr from "flatpickr";
+import {Chart} from "chart.js";
 import {registerables} from "chart.js";
+import {OpenNewRouteType} from "../types/open-route.type";
+import {DefaultResponseType} from "../types/default-response.type";
 
 export class Main {
-    constructor(openNewRoute) {
+    readonly openNewRoute: OpenNewRouteType;
+    private startDate : Date;
+    private endDate : Date;
+    readonly currentPeriod:string;
+    constructor(openNewRoute:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         this.incomeChart = null;
         this.expensesChart = null;
@@ -13,14 +19,15 @@ export class Main {
         this.endDate = null;
         this.currentPeriod = "all";
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
-            return this.openNewRoute('/sign-in');
+            this.openNewRoute('/sign-in');
+            return;
         }
         this.setupButtonListeners();
         this.initDatePickers();
         this.drawPie();
     }
 
-    setupButtonListeners() {
+    private setupButtonListeners():void {
         const buttons = document.querySelectorAll(".buttons-layout a");
         buttons.forEach(button => {
             button.addEventListener("click", async (event) => {
@@ -28,7 +35,7 @@ export class Main {
             });
         });
     }
-    async handleButtonClick(event, buttons) {
+    private async handleButtonClick(event, buttons) {
         buttons.forEach(btn => btn.classList.remove("btn-secondary"));
         buttons.forEach(btn => btn.classList.add("btn-outline-secondary"));
         event.currentTarget.classList.add("btn-secondary");
@@ -64,13 +71,13 @@ export class Main {
         }
     }
 
-    async initDatePickers() {
-        const startInput = document.getElementById("start-interval");
-        const endInput = document.getElementById("end-interval");
+    private async initDatePickers():Promise<void> {
+        const startInput:HTMLElement | null = document.getElementById("start-interval");
+        const endInput:HTMLElement | null = document.getElementById("end-interval");
 
         flatpickr(startInput, {
             dateFormat: "Y-m-d",
-            onChange: (selectedDates) => {
+            onChange: (selectedDates:Date[]):void => {
                 this.startDate = selectedDates[0];
                 this.updateCharts();
             }
@@ -79,14 +86,14 @@ export class Main {
 
         flatpickr(endInput, {
             dateFormat: "Y-m-d",
-            onChange: (selectedDates) => {
+            onChange: (selectedDates:Date[]):void => {
                 this.endDate = selectedDates[0];
                 this.updateCharts();
             }
         });
     }
 
-    async updateCharts() {
+    async updateCharts():Promise<void> {
         if (this.startDate && this.endDate) {
             const params = new URLSearchParams({
                 period: this.currentPeriod,
@@ -95,7 +102,7 @@ export class Main {
             });
 
             try {
-                const result = await HttpUtils.request(`/operations?${params}`, "GET", true);
+                const result:DefaultResponseType = await HttpUtils.request(`/operations?${params}`, "GET", true,null);
                 const data = result.response || [];
                 await this.drawPie(data);
             } catch (error) {
@@ -104,7 +111,7 @@ export class Main {
         }
     }
 
-    async drawPie(data = null) {
+    async drawPie(data = null):Promise<void> {
         try {
             if (!data) {
                 data = await this.getAllData();
@@ -138,7 +145,7 @@ export class Main {
         }
     }
 
-    getRandomColor() {
+    getRandomColor():string {
         return `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
     }
 

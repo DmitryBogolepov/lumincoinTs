@@ -1,9 +1,9 @@
 import {HttpUtils} from "../utils/http-utils";
 
 export class Layout {
+    private modal:HTMLElement | null
     constructor() {
         this.modal = document.getElementById("user-modal");
-
         this.initModal();
     }
 

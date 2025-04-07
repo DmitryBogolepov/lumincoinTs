@@ -1,19 +1,28 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
 import {OpenNewRouteType} from "../../types/open-route.type";
+import {CategoryRequestType} from "../../types/category-request.type";
+import {ChangeFormType} from "../../types/change-form.type";
+import {DefaultResponseType} from "../../types/default-response.type";
 
 export class Change {
     readonly openNewRoute: OpenNewRouteType;
+    private typeElement: HTMLSelectElement;
+    private categoryElement: HTMLSelectElement;
+    readonly dateElement: HTMLInputElement;
+    private amountElement: HTMLInputElement;
+    private commentaryElement: HTMLInputElement;
     constructor(openNewRoute:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
-        this.typeElement = document.getElementById('type');
-        this.categoryElement = document.getElementById('category');
-        this.amountElement = document.getElementById('amount');
-        this.dateElement = document.getElementById('date');
-        this.commentaryElement = document.getElementById('commentary');
+        this.typeElement = document.getElementById('type') as HTMLSelectElement;
+        this.categoryElement = document.getElementById('category') as HTMLSelectElement;
+        this.dateElement = document.getElementById('date') as HTMLInputElement;
+        this.amountElement = document.getElementById('amount') as HTMLInputElement;
+        this.commentaryElement = document.getElementById('commentary') as HTMLInputElement;
         this.openNewRoute = openNewRoute;
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
-            return this.openNewRoute('/sign-in');
+            this.openNewRoute('/sign-in');
+            return;
         }
         this.loadData();
         this.typeElement.addEventListener('change', this.onTypeChange.bind(this));
@@ -25,7 +34,7 @@ export class Change {
         const id:string = params.get("id");
         if (id) {
             try {
-                const result = await HttpUtils.request(`/operations/${id}`, "GET", true);
+                const result = await HttpUtils.request(`/operations/${id}`, "GET", true, null);
                 if (result.response) {
                     this.populateForm(result.response);
                 }
@@ -35,31 +44,31 @@ export class Change {
         }
     }
 
-    private populateForm(data):void {
+    private populateForm(data:ChangeFormType):void {
         this.typeElement.value = data.type;
-        this.amountElement.value = data.amount;
+        this.amountElement.value = data.amount.toString();
         this.dateElement.value = data.date;
         this.commentaryElement.value = data.comment || '';
 
         this.onTypeChange();
-        this.categoryElement.value = data.category_id;
+        this.categoryElement.value = data.category_id.toString();
     }
 
     private async onTypeChange():Promise<void> {
-        const selectedType = this.typeElement.value.trim();
+        const selectedType:string = this.typeElement.value.trim();
         this.categoryElement.innerHTML = "";
         if (selectedType === "income") {
-            const categories = await this.getIncomeCategories();
+            const categories:CategoryRequestType[] = await this.getIncomeCategories();
             categories.forEach(category => {
-                let option = document.createElement('option');
+                let option:HTMLOptionElement | null = document.createElement('option');
                 option.value = category.title;
                 option.text = category.title;
                 this.categoryElement.appendChild(option);
             });
         } else if (selectedType === "expense") {
-            const categories = await this.getExpenseCategories();
+            const categories:CategoryRequestType[] = await this.getExpenseCategories();
             categories.forEach(category => {
-                let option = document.createElement('option');
+                let option:HTMLOptionElement | null = document.createElement('option');
                 option.value = category.title;
                 option.text = category.title;
                 this.categoryElement.appendChild(option);
@@ -67,7 +76,7 @@ export class Change {
         }
     }
 
-    private validateData(type, category, amount, date, comment):boolean {
+    private validateData(type:string, category: number | null, amount:number, date:string, comment:string):boolean {
         let isValid:boolean = true;
         if (["income", "expense"].includes(type)) {
             this.typeElement.classList.remove('is-invalid');
@@ -106,11 +115,11 @@ export class Change {
     }
 
     private async createNewInfo():Promise<void> {
-        const type = this.typeElement.value.trim();
+        const type:string = this.typeElement.value.trim();
         const category_id:number = Number(this.categoryElement.value);
         const amount:number = Number(this.amountElement.value);
-        const date = this.dateElement.value.trim();
-        const comment = this.commentaryElement.value.trim();
+        const date:string = this.dateElement.value.trim();
+        const comment:string = this.commentaryElement.value.trim();
         const params = new URLSearchParams(window.location.search);
         const id:string = params.get("id");
         if (!id) return;
@@ -120,7 +129,7 @@ export class Change {
             return;
         }
         try {
-            const result = await HttpUtils.request(`/operations/${id}`, "PUT", true, {
+            const result:DefaultResponseType= await HttpUtils.request(`/operations/${id}`, "PUT", true, {
                 type,
                 category_id,
                 amount,
@@ -137,18 +146,13 @@ export class Change {
             console.error("Ошибка при запросе:", error);
         }
     }
-    private async getIncomeCategories() {
-        const categories =await HttpUtils.request("/categories/income");
-        if (categories.error || !categories.response) {
-            return;
-        }
-        return categories.response;
+    private async getIncomeCategories(): Promise<CategoryRequestType[]> {
+        const result = await HttpUtils.request("/categories/income", "GET", true, null);
+        return result?.response || [];
     }
-    private async getExpenseCategories() {
-        const categories =await HttpUtils.request("/categories/expense");
-        if (categories.error || !categories.response) {
-            return;
-        }
-        return categories.response;
+
+    private async getExpenseCategories(): Promise<CategoryRequestType[]> {
+        const result = await HttpUtils.request("/categories/expense", "GET", true, null);
+        return result?.response || [];
     }
 }

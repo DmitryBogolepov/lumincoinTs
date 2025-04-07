@@ -1,9 +1,13 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
 import {OpenNewRouteType} from "../../types/open-route.type";
-
+import * as bootstrap from "../../../dist/js/bootstrap.min";
+import {DefaultResponseType} from "../../types/default-response.type";
+import {CategoryRequestType} from "../../types/category-request.type";
 export class Income {
     readonly openNewRoute: OpenNewRouteType;
+    private currentDeleteTarget: HTMLElement | null = null;
+    private currentDeleteId: string | null = null;
     constructor(openNewRoute:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
@@ -16,8 +20,9 @@ export class Income {
     }
 
     private initDeleteButtons():void {
-        document.addEventListener("click", (event) => {
-            const deleteButton = event.target.closest(".delete-btn");
+        document.addEventListener("click", (event:MouseEvent):void => {
+            const target = event.target as HTMLElement;
+            const deleteButton = target.closest(".delete-btn");
             if (deleteButton) {
                 event.preventDefault();
                 this.currentDeleteTarget = deleteButton.closest(".action-card");
@@ -29,7 +34,7 @@ export class Income {
         document.getElementById("confirmDelete").addEventListener("click", async ():Promise<void> => {
             if (this.currentDeleteTarget && this.currentDeleteId) {
                 try {
-                    const response = await HttpUtils.request(`/categories/income/${this.currentDeleteId}`, "DELETE", true);
+                    const response:DefaultResponseType = await HttpUtils.request(`/categories/income/${this.currentDeleteId}`, "DELETE", true,null);
                     if (!response.error) {
                         this.currentDeleteTarget.remove();
                         const modalElement:HTMLElement | null = document.getElementById("deleteModal");
@@ -45,15 +50,15 @@ export class Income {
         });
     }
 
-    private initEditButtons():void {
-        document.addEventListener("click", (event) => {
-            const editButton = event.target.closest("#redact-btn");
+    private async initEditButtons():Promise<void> {
+        document.addEventListener("click",async (event:MouseEvent):Promise<void>=> {
+            const editButton = (event.target as HTMLElement).closest(".redact-btn");
             if (editButton) {
                 event.preventDefault();
-                const card = editButton.closest(".action-card");
+                const card = editButton.closest(".action-card") as HTMLElement;
                 const id:string | number = card.dataset.id;
                 if (id) {
-                    this.openNewRoute(`/incomeChange?id=${id}`);
+                    await this.openNewRoute(`/incomeChange?id=${id}`);
                 }
             }
         });
@@ -61,7 +66,7 @@ export class Income {
 
     private async getAllIncomes():Promise<void> {
         try {
-            const result = await HttpUtils.request('/categories/income');
+            const result:DefaultResponseType = await HttpUtils.request("/categories/income", "GET", true, null);
             if (!result.error && Array.isArray(result.response)) {
                 this.renderCards(result.response);
             } else {
@@ -72,14 +77,14 @@ export class Income {
         }
     }
 
-    private renderCards(items):void {
+    private renderCards(items:CategoryRequestType[]):void {
         const container:HTMLElement | null = document.getElementById("cards-container");
         container.innerHTML = "";
 
         items.forEach(item => {
             const card:HTMLDivElement = document.createElement("div");
             card.classList.add("action-card", "d-flex", "justify-content-center");
-            card.dataset.id = item.id;
+            card.dataset.id = item.id.toString();
             const title:HTMLDivElement = document.createElement("div");
             title.classList.add("card-title");
             title.textContent = item.title;
@@ -89,9 +94,8 @@ export class Income {
 
             const editBtn:HTMLAnchorElement = document.createElement("a");
             editBtn.href = "javascript:void(0);";
-            editBtn.classList.add("change-btn", "btn", "btn-primary");
+            editBtn.classList.add("change-btn", "btn", "btn-primary", "redact-btn");
             editBtn.textContent = "Редактировать";
-            editBtn.setAttribute("id", "redact-btn")
 
             const deleteBtn:HTMLAnchorElement = document.createElement("a");
             deleteBtn.href = "#";

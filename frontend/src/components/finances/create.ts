@@ -1,16 +1,23 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
-import flatpickr from "../../../node_modules/flatpickr/dist/flatpickr.min.js";
+import flatpickr from "flatpickr";
 import {OpenNewRouteType} from "../../types/open-route.type";
+import {CategoryRequestType} from "../../types/category-request.type";
 export class Create {
+    private typeElement: HTMLSelectElement;
+    private categoryElement: HTMLSelectElement;
+    readonly dateElement: HTMLInputElement;
+    private amountElement: HTMLInputElement;
+    private commentaryElement: HTMLInputElement;
+    private categoriesList: CategoryRequestType[] = [];
     readonly openNewRoute: OpenNewRouteType;
     constructor(openNewRoute:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
-        this.typeElement = document.getElementById('type');
-        this.categoryElement = document.getElementById('category');
-        this.amountElement = document.getElementById('amount');
-        this.dateElement = document.getElementById('date');
-        this.commentaryElement = document.getElementById('commentary');
+        this.typeElement = document.getElementById('type') as HTMLSelectElement;
+        this.categoryElement = document.getElementById('category') as HTMLSelectElement;
+        this.dateElement = document.getElementById('date') as HTMLInputElement;
+        this.amountElement = document.getElementById('amount') as HTMLInputElement;
+        this.commentaryElement = document.getElementById('commentary') as HTMLInputElement;
         this.initDatePicker();
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             this.openNewRoute('/sign-in');
@@ -22,10 +29,10 @@ export class Create {
     }
 
     private async onTypeChange():Promise<void> {
-        const selectedType = this.typeElement.value.trim();
+        const selectedType:string = this.typeElement.value.trim();
         this.categoryElement.innerHTML = "";
         this.categoriesList = [];
-        let categories = [];
+        let categories:CategoryRequestType[] = [];
 
         if (selectedType === "income") {
             categories = await this.getIncomeCategories();
@@ -42,7 +49,7 @@ export class Create {
         });
     }
 
-    private validateData(type, category, amount, date, comment) {
+    private validateData(type:string, category: number | null, amount:number, date:string, comment:string):boolean {
         let isValid:boolean = true;
         if (["income", "expense"].includes(type)) {
             this.typeElement.classList.remove('is-invalid');
@@ -99,32 +106,32 @@ export class Create {
     }
 
     private async createNewInfo():Promise<void> {
-        let type = this.typeElement.value.trim();
-        const categoryTitle = this.categoryElement.value;
-        const amount = Number(this.amountElement.value);
-        const date = this.dateElement.value.trim();
-        const comment = this.commentaryElement.value.trim();
+        let type:string = this.typeElement.value.trim();
+        const categoryTitle:string = this.categoryElement.value;
+        const amount:number = Number(this.amountElement.value);
+        const date:string = this.dateElement.value.trim();
+        const comment:string = this.commentaryElement.value.trim();
         if (type === "Доход") {
             type = "income";
         } else if (type === "Расход") {
             type = "expense";
         }
 
-        const category = this.categoriesList.find(c => c.title === categoryTitle);
-        if (!category) {
+        const foundCategory = this.categoriesList.find(c => c.title === categoryTitle);
+        const categoryId:number = foundCategory ? foundCategory.id : null;
+        if (!categoryId) {
             console.error("Ошибка: Не удалось найти ID категории");
             return;
         }
-        const category_id = category.id;
 
-        const isValid:boolean = this.validateData(type, category_id, amount, date, comment);
+        const isValid:boolean = this.validateData(type, categoryId, amount, date, comment);
         if (!isValid) {
             return;
         }
         try {
             const result = await HttpUtils.request("/operations", "POST", true, {
                 type,
-                category_id,
+                category_id:categoryId,
                 amount,
                 date,
                 comment,
@@ -139,19 +146,13 @@ export class Create {
         }
     }
 
-    async getIncomeCategories() {
-        const categories = await HttpUtils.request("/categories/income");
-        if (categories.error || !categories.response) {
-            return;
-        }
-        return categories.response;
+    private async getIncomeCategories(): Promise<CategoryRequestType[]> {
+        const result = await HttpUtils.request("/categories/income", "GET", true, null);
+        return result?.response || [];
     }
 
-    async getExpenseCategories() {
-        const categories = await HttpUtils.request("/categories/expense");
-        if (categories.error || !categories.response) {
-            return;
-        }
-        return categories.response;
+    private async getExpenseCategories(): Promise<CategoryRequestType[]> {
+        const result = await HttpUtils.request("/categories/expense", "GET", true, null);
+        return result?.response || [];
     }
 }
