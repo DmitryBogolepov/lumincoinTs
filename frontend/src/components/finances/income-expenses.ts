@@ -1,9 +1,17 @@
 import { AuthUtils } from "../../utils/auth-utils";
 import { HttpUtils } from "../../utils/http-utils";
-import flatpickr from "../../../node_modules/flatpickr/dist/flatpickr.min.js";
+import flatpickr from "flatpickr";
 import {OpenNewRouteType} from "../../types/open-route.type";
+import {CategoryRequestType} from "../../types/category-request.type";
+import {DefaultResponseType} from "../../types/default-response.type";
+import * as bootstrap from "../../../dist/js/bootstrap.min";
 export class IncomeExpense {
     readonly openNewRoute: OpenNewRouteType;
+    private startDate : Date;
+    private endDate : Date;
+    private currentPeriod:string;
+    private categories: CategoryRequestType[];
+    private currentDeleteId :string;
     constructor(openNewRoute:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         this.currentPeriod = "all";
@@ -91,7 +99,7 @@ export class IncomeExpense {
 
         flatpickr(startInput, {
             dateFormat: "Y-m-d",
-            onChange: async (selectedDates):void => {
+            onChange: async (selectedDates:Date[]):Promise<void> => {
                 this.startDate = selectedDates[0];
                 await this.updateTable();
             }
@@ -99,7 +107,7 @@ export class IncomeExpense {
 
         flatpickr(endInput, {
             dateFormat: "Y-m-d",
-            onChange: (selectedDates):void => {
+            onChange: (selectedDates:Date[]):void => {
                 this.endDate = selectedDates[0];
                 this.updateTable();
             }
@@ -195,7 +203,7 @@ export class IncomeExpense {
     }
 
     private initDeleteButtons():void {
-        document.addEventListener("click", (event) => {
+        document.addEventListener("click", (event:MouseEvent):void => {
             const deleteButton = event.target.closest(".delete-btn");
             if (deleteButton) {
                 event.preventDefault();
@@ -208,7 +216,7 @@ export class IncomeExpense {
         document.getElementById("confirmDelete").addEventListener("click", async ():Promise<void> => {
             if (this.currentDeleteTarget) {
                 try {
-                    const response = await HttpUtils.request(`/operations/${this.currentDeleteId}`, "DELETE", true);
+                    const response:DefaultResponseType = await HttpUtils.request(`/operations/${this.currentDeleteId}`, "DELETE", true);
                     if (!response.error) {
                         const modalElement:HTMLElement | null = document.getElementById("deleteModal");
                         const modalInstance = bootstrap.Modal.getInstance(modalElement);

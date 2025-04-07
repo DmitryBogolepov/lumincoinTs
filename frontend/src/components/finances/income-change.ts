@@ -4,11 +4,11 @@ import {OpenNewRouteType} from "../../types/open-route.type";
 
 export class IncomeChange {
     readonly openNewRoute: OpenNewRouteType;
-    titleElement:HTMLElement | null;
+    titleElement:HTMLInputElement | null;
     constructor(openNewRoute:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         this.getItemText();
-        this.titleElement = document.getElementById("title-value");
+        this.titleElement = document.getElementById("title-value") as HTMLInputElement;
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             this.openNewRoute('/sign-in');
             return ;
@@ -22,7 +22,7 @@ export class IncomeChange {
         }
     }
 
-    async getItemText() {
+    async getItemText():Promise<string> {
         const params = new URLSearchParams(window.location.search);
         const id:string = params.get("id");
         if (!id) return;

@@ -18,7 +18,7 @@ export class SignIn {
         document.getElementById('process-button').addEventListener('click', this.login.bind(this));
     }
 
-    validateForm():boolean {
+    private validateForm():boolean {
         let isValid:boolean = true;
         if (this.emailElement.value && this.emailElement.value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
             this.emailElement.classList.remove('is-invalid');
@@ -35,7 +35,7 @@ export class SignIn {
         return isValid;
     }
 
-    async login():Promise<void> {
+    private async login():Promise<void> {
         if (this.validateForm()) {
             const result = await HttpUtils.request('/login', 'POST', false, {
                 email: this.emailElement.value,
@@ -52,7 +52,7 @@ export class SignIn {
                 result.response.user
             );
 
-            this.openNewRoute("/");
+            await this.openNewRoute("/");
         }
     }
 }

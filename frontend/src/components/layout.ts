@@ -1,13 +1,15 @@
 import {HttpUtils} from "../utils/http-utils";
+import {DefaultResponseType} from "../types/default-response.type";
+import {AuthInfo} from "../types/Auth-tokens-response.type";
 
 export class Layout {
-    private modal:HTMLElement | null
+    readonly modal:HTMLElement | null
     constructor() {
         this.modal = document.getElementById("user-modal");
         this.initModal();
     }
 
-    static linksLogic(navLinksElement, urlRoute) {
+    public static linksLogic(navLinksElement:NodeListOf<Element>, urlRoute:string):void {
         navLinksElement.forEach(link => {
             if (link.getAttribute('href') === urlRoute) {
                 link.classList.add('active');
@@ -16,11 +18,11 @@ export class Layout {
             }
         });
 
-        const categoryLink = document.getElementById("categoryDropdown");
-        const arrow = document.getElementById("arrow");
-        const block = document.getElementById("dropdown-block");
+        const categoryLink:HTMLElement | null = document.getElementById("categoryDropdown");
+        const arrow:HTMLElement | null = document.getElementById("arrow");
+        const block:HTMLElement | null = document.getElementById("dropdown-block");
         const dropdownLinks = document.querySelectorAll(".dropdown-item");
-        let isDropdownActive = false;
+        let isDropdownActive:boolean = false;
 
         dropdownLinks.forEach(link => {
             if (link.getAttribute('href') === urlRoute) {
@@ -44,7 +46,7 @@ export class Layout {
         }
 
         categoryLink.addEventListener("click", () => {
-            const isSelected = block.classList.contains('selected');
+            const isSelected:boolean = block.classList.contains('selected');
             if (isSelected) {
                 block.classList.remove('selected');
                 categoryLink.classList.remove('active');
@@ -60,9 +62,9 @@ export class Layout {
     }
 
 
-    static async updateBalance(balanceItem) {
+    public static async updateBalance(balanceItem:HTMLElement | null):Promise<void> {
         try {
-            const result = await HttpUtils.request('/balance', 'GET', true);
+            const result:DefaultResponseType = await HttpUtils.request('/balance', 'GET', true,null);
             if (result.error) {
                 balanceItem.innerText = "Ошибка загрузки";
             } else {
@@ -74,7 +76,7 @@ export class Layout {
     }
 
 
-    static setUserData(userInfo,userName) {
+    public static setUserData(userInfo,userName:HTMLElement | null):void {
         if (userInfo) {
             if (userName) {
                 userName.innerText = `${userInfo.name} ${userInfo.lastName}`;
@@ -82,12 +84,12 @@ export class Layout {
         }
     }
 
-     initModal() {
-        const userAction = document.getElementById("user-click");
-        const closeModal = document.getElementById("close-modal");
+     private initModal():void {
+        const userAction:HTMLElement | null = document.getElementById("user-click");
+        const closeModal:HTMLElement | null = document.getElementById("close-modal");
 
         if (userAction && this.modal) {
-            userAction.addEventListener("click", function (event) {
+            userAction.addEventListener("click", function (event:MouseEvent) {
                 event.preventDefault();
                 this.modal.style.display = "flex";
             }.bind(this));
@@ -100,7 +102,7 @@ export class Layout {
         }
 
         if (this.modal) {
-            window.addEventListener("click", function (event) {
+            window.addEventListener("click", function (event:MouseEvent) {
                 if (event.target === this.modal) {
                     this.modal.style.display = "none";
                 }

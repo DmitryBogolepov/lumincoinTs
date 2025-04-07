@@ -2,7 +2,7 @@ import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
 
 export class Logout {
-    private openNewRoute: (url: string) => Promise<void>;
+    readonly openNewRoute: (url: string) => Promise<void>;
     constructor(openNewRoute: (url: string) => Promise<void>) {
         this.openNewRoute = openNewRoute;
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey) || !AuthUtils.getAuthInfo(AuthUtils.refreshTokenKey)) {

@@ -3,11 +3,11 @@ import {HttpUtils} from "../../utils/http-utils";
 import {OpenNewRouteType} from "../../types/open-route.type";
 
 export class IncomeAdd {
-    titleElement:HTMLElement | null;
+    titleElement:HTMLInputElement | null;
     readonly openNewRoute: OpenNewRouteType;
     constructor(openNewRoute:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
-        this.titleElement = document.getElementById("title-value");
+        this.titleElement = document.getElementById("title-value") as HTMLInputElement;
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             this.openNewRoute('/sign-in');
             return ;

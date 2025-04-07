@@ -3,11 +3,11 @@ import {HttpUtils} from "../../utils/http-utils";
 import {OpenNewRouteType} from "../../types/open-route.type";
 
 export class ExpensesChange {
-    titleElement:HTMLElement | null;
+    titleElement:HTMLInputElement | null;
     readonly openNewRoute: OpenNewRouteType;
     constructor(openNewRoute:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
-        this.titleElement = document.getElementById("title-value");
+        this.titleElement = document.getElementById("title-value") as HTMLInputElement;
         this.getItemText();
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             this.openNewRoute('/sign-in');
@@ -21,12 +21,12 @@ export class ExpensesChange {
         }
     }
 
-    private async getItemText() {
+    private async getItemText():Promise<string> {
         const params = new URLSearchParams(window.location.search);
-        const id = params.get("id");
+        const id:string = params.get("id");
         if (!id) return;
         try {
-            const result = await HttpUtils.request(`/categories/expense/${id}`, "GET");
+            const result = await HttpUtils.request(`/categories/expense/${id}`, "GET", true);
             if (result.response && result.response.title) {
                 this.titleElement.value = result.response.title;
             }
