@@ -15,6 +15,7 @@ import {AuthUtils} from "./utils/auth-utils";
 import {Layout} from "./components/layout";
 import {RouteType} from "./types/route.type";
 import {AuthInfo} from "./types/Auth-tokens-response.type";
+import {UserInfoType} from "./types/userInfo.type";
 
 
 export class Router {

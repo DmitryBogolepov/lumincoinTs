@@ -66,7 +66,8 @@ export class Expenses {
 
     private async getAllExpenses():Promise<void> {
         try {
-            const result = await HttpUtils.request("/categories/expense", "GET", true, null);
+            const result: DefaultResponseType = await HttpUtils.request("/categories/expense", "GET", true, null);
+
             if (!result.error && Array.isArray(result.response)) {
                 this.renderCards(result.response);
             } else {

@@ -5,13 +5,15 @@ import {OpenNewRouteType} from "../../types/open-route.type";
 import {CategoryRequestType} from "../../types/category-request.type";
 import {DefaultResponseType} from "../../types/default-response.type";
 import * as bootstrap from "../../../dist/js/bootstrap.min";
+import {OperationType} from "../../types/login-resquest.type";
 export class IncomeExpense {
     readonly openNewRoute: OpenNewRouteType;
-    private startDate : Date;
-    private endDate : Date;
+    private startDate : Date | null;
+    private endDate : Date |null;
     private currentPeriod:string;
     private categories: CategoryRequestType[];
     private currentDeleteId :string;
+    private currentDeleteTarget: HTMLElement | null;
     constructor(openNewRoute:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         this.currentPeriod = "all";
@@ -31,15 +33,19 @@ export class IncomeExpense {
 
     async loadCategories():Promise<void> {
         try {
-            const incomeResult = await HttpUtils.request("/categories/income", "GET", true);
-            const expenseResult = await HttpUtils.request("/categories/expense", "GET", true);
+            const incomeResult:DefaultResponseType = await HttpUtils.request("/categories/income", "GET", true);
+            const expenseResult:DefaultResponseType  = await HttpUtils.request("/categories/expense", "GET", true);
 
             if (!incomeResult.error && incomeResult.response) {
-                this.categories.push(...incomeResult.response.map(cat => ({ ...cat, type: 'income' })));
+                this.categories.push(
+                    ...incomeResult.response.map((cat: any) => ({ ...cat, type: 'income' }))
+                );
             }
 
             if (!expenseResult.error && expenseResult.response) {
-                this.categories.push(...expenseResult.response.map(cat => ({ ...cat, type: 'expense' })));
+                this.categories.push(
+                    ...expenseResult.response.map((cat: any) => ({ ...cat, type: 'expense' }))
+                );
             }
         } catch (error) {
             console.error("Ошибка при загрузке категорий:", error);
@@ -47,20 +53,21 @@ export class IncomeExpense {
     }
 
     setupButtonListeners():void {
-        const buttons = document.querySelectorAll(".buttons-layout a");
+        const buttons:NodeListOf<Element> = document.querySelectorAll(".buttons-layout a");
         buttons.forEach(button => {
-            button.addEventListener("click", async (event:Event):Promise<void> => {
+            button.addEventListener("click", async (event:MouseEvent):Promise<void> => {
                 await this.handleButtonClick(event, buttons);
             });
         });
     }
 
-    async handleButtonClick(event, buttons):Promise<void> {
+    async handleButtonClick(event: MouseEvent, buttons:NodeListOf<Element>):Promise<void> {
         buttons.forEach(btn => btn.classList.remove("btn-secondary"));
         buttons.forEach(btn => btn.classList.add("btn-outline-secondary"));
-        event.currentTarget.classList.add("btn-secondary");
-        event.currentTarget.classList.remove("btn-outline-secondary");
-        const buttonText = event.currentTarget.innerText;
+        const target = event.currentTarget as HTMLElement;
+        target.classList.add("btn-secondary");
+        target.classList.remove("btn-outline-secondary");
+        const buttonText = target.innerText;
 
         switch (buttonText) {
             case "Сегодня":
@@ -97,6 +104,8 @@ export class IncomeExpense {
         const startInput:HTMLElement | null = document.getElementById("start-interval");
         const endInput:HTMLElement | null  = document.getElementById("end-interval");
 
+        if (!startInput || !endInput) return;
+
         flatpickr(startInput, {
             dateFormat: "Y-m-d",
             onChange: async (selectedDates:Date[]):Promise<void> => {
@@ -107,9 +116,9 @@ export class IncomeExpense {
 
         flatpickr(endInput, {
             dateFormat: "Y-m-d",
-            onChange: (selectedDates:Date[]):void => {
+            onChange:async (selectedDates:Date[]):Promise<void> => {
                 this.endDate = selectedDates[0];
-                this.updateTable();
+                await this.updateTable();
             }
         });
     }
@@ -149,14 +158,14 @@ export class IncomeExpense {
         }
     }
 
-    async drawTable(data = null):Promise<void> {
+    async drawTable(data?:any):Promise<void> {
         if (!data) {
             data = await this.getAllData();
         }
         const tbody = document.querySelector(".table tbody");
         tbody.innerHTML = "";
 
-        data.forEach((item, index:number):void => {
+        (data as OperationType[]).forEach((item: OperationType, index: number): void => {
             let typeText:string = "";
             let typeColor:string = "";
 
@@ -204,7 +213,8 @@ export class IncomeExpense {
 
     private initDeleteButtons():void {
         document.addEventListener("click", (event:MouseEvent):void => {
-            const deleteButton = event.target.closest(".delete-btn");
+            const target = event.target as HTMLElement;
+            const deleteButton = target.closest(".delete-btn") as HTMLElement | null;
             if (deleteButton) {
                 event.preventDefault();
                 this.currentDeleteTarget = deleteButton.closest(".table-row");

@@ -5,12 +5,15 @@ import {Chart} from "chart.js";
 import {registerables} from "chart.js";
 import {OpenNewRouteType} from "../types/open-route.type";
 import {DefaultResponseType} from "../types/default-response.type";
+import {DataType} from "../types/data.type";
 
 export class Main {
     readonly openNewRoute: OpenNewRouteType;
-    private startDate : Date;
-    private endDate : Date;
-    readonly currentPeriod:string;
+    private startDate : Date |null;
+    private endDate : Date|null;
+    private currentPeriod:string;
+    private incomeChart: Chart | null;
+    private expensesChart: Chart | null;
     constructor(openNewRoute:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         this.incomeChart = null;
@@ -28,19 +31,20 @@ export class Main {
     }
 
     private setupButtonListeners():void {
-        const buttons = document.querySelectorAll(".buttons-layout a");
+        const buttons:NodeListOf<Element> = document.querySelectorAll(".buttons-layout a");
         buttons.forEach(button => {
-            button.addEventListener("click", async (event) => {
+            button.addEventListener("click", async (event:MouseEvent):Promise<void> => {
                 await this.handleButtonClick(event, buttons);
             });
         });
     }
-    private async handleButtonClick(event, buttons) {
+    private async handleButtonClick(event:MouseEvent, buttons:NodeListOf<Element>):Promise<void> {
         buttons.forEach(btn => btn.classList.remove("btn-secondary"));
         buttons.forEach(btn => btn.classList.add("btn-outline-secondary"));
-        event.currentTarget.classList.add("btn-secondary");
-        event.currentTarget.classList.remove("btn-outline-secondary");
-        const buttonText = event.currentTarget.innerText;
+        const target = event.currentTarget as HTMLElement;
+        target.classList.add("btn-secondary");
+        target.classList.remove("btn-outline-secondary");
+        const buttonText = target.innerText;
         switch (buttonText) {
             case "Сегодня":
                 this.currentPeriod = "day";
@@ -111,14 +115,14 @@ export class Main {
         }
     }
 
-    async drawPie(data = null):Promise<void> {
+    async drawPie(data:DataType[] | null = null):Promise<void> {
         try {
             if (!data) {
                 data = await this.getAllData();
             }
 
-            const incomeItems = data.filter(item => item.type === "income");
-            const expenseItems = data.filter(item => item.type !== "income");
+            const incomeItems:DataType[] = data.filter(item => item.type === "income");
+            const expenseItems:DataType[] = data.filter(item => item.type !== "income");
 
             this.createChart("incomeChart", "Доходы", incomeItems, this.incomeChart);
             this.createChart("expensesChart", "Расходы", expenseItems, this.expensesChart);
@@ -127,7 +131,7 @@ export class Main {
         }
     }
 
-    async getAllData() {
+    async getAllData():Promise<any> {
         try {
             const params = new URLSearchParams({
                 period: this.currentPeriod || "all",
@@ -137,7 +141,7 @@ export class Main {
                 params.append("dateFrom", this.startDate.toISOString().split("T")[0]);
                 params.append("dateTo", this.endDate.toISOString().split("T")[0]);
             }
-            const result = await HttpUtils.request(`/operations?${params}`, "GET", true);
+            const result: DefaultResponseType = await HttpUtils.request(`/operations?${params}`, "GET", true);
             return result.response || [];
         } catch (error) {
             console.error("Ошибка запроса:", error);
@@ -149,9 +153,12 @@ export class Main {
         return `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
     }
 
-    createChart(canvasId, label, items, existingChart) {
+    createChart(canvasId: string,
+                label: string,
+                items: DataType[],
+                existingChart: Chart | null) {
         Chart.register(...registerables);
-        const ctx = document.getElementById(canvasId)?.getContext("2d");
+        const ctx:CanvasRenderingContext2D = (document.getElementById(canvasId) as HTMLCanvasElement)?.getContext("2d");
         if (!ctx) return;
         if (existingChart) {
             existingChart.destroy();
@@ -163,7 +170,7 @@ export class Main {
                 datasets: [{
                     label: label,
                     data: items.map(item => item.amount),
-                    backgroundColor: items.map(() => this.getRandomColor()),
+                    backgroundColor: items.map(():string => this.getRandomColor()),
                     hoverOffset: 4
                 }]
             },

@@ -1,25 +1,32 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
 import {OpenNewRouteType} from "../../types/open-route.type";
+import {SignUpPostType} from "../../types/signUp-post.type";
+import {DefaultResponseType} from "../../types/default-response.type";
 
 export class SignUp {
     readonly openNewRoute: OpenNewRouteType;
+    emailElement:HTMLInputElement | null;
+    passwordElement:HTMLInputElement | null;
+    nameElement:HTMLInputElement | null;
+    passwordRepeatElement:HTMLInputElement | null;
     constructor(openNewRoute:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
 
         if (AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
-            return this.openNewRoute('/');
+            this.openNewRoute('/');
+            return;
         }
 
-        this.emailElement = document.getElementById('email');
-        this.nameElement = document.getElementById('name');
-        this.passwordElement = document.getElementById('password');
-        this.passwordRepeatElement = document.getElementById('password-repeat');
+        this.emailElement = document.getElementById('email') as HTMLInputElement;
+        this.nameElement = document.getElementById('name') as HTMLInputElement;
+        this.passwordElement = document.getElementById('password') as HTMLInputElement;
+        this.passwordRepeatElement = document.getElementById('password-repeat') as HTMLInputElement;
         document.getElementById('process-button').addEventListener('click', this.signUp.bind(this));
     }
 
-    validateForm() {
-        let isValid = true;
+    private validateForm():boolean {
+        let isValid:boolean = true;
         if (this.nameElement.value) {
             this.nameElement.classList.remove('is-invalid');
         } else {
@@ -47,12 +54,12 @@ export class SignUp {
         return isValid;
     }
 
-    async signUp() {
+    async signUp():Promise<void> {
         if (this.validateForm()) {
-            const fullName = this.nameElement.value.trim().split(' ');
-            const firstName = fullName[0];
-            const lastName = fullName.slice(1).join(' ');
-            const result = await HttpUtils.request('/signup', 'POST', false, {
+            const fullName:string[] = this.nameElement.value.trim().split(' ');
+            const firstName:string = fullName[0];
+            const lastName:string = fullName.slice(1).join(' ');
+            const result: DefaultResponseType = await HttpUtils.request('/signup', 'POST', false, {
                 name: firstName,
                 lastName:lastName,
                 email: this.emailElement.value,
@@ -62,7 +69,7 @@ export class SignUp {
             if (result.error || !result.response ) {
                 return;
             }
-            const loginResult = await HttpUtils.request('/login', 'POST', false, {
+            const loginResult:DefaultResponseType = await HttpUtils.request('/login', 'POST', false, {
                 email: this.emailElement.value,
                 password: this.passwordElement.value,
             });

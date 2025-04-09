@@ -1,6 +1,6 @@
 import {HttpUtils} from "../utils/http-utils";
 import {DefaultResponseType} from "../types/default-response.type";
-import {AuthInfo} from "../types/Auth-tokens-response.type";
+import {UserInfoType} from "../types/userInfo.type";
 
 export class Layout {
     readonly modal:HTMLElement | null
@@ -37,12 +37,12 @@ export class Layout {
             block.classList.add("selected");
             categoryLink.classList.add('active');
             arrow.classList.add('rotated');
-            dropdownLinks.forEach(link => link.style.display = "block");
+            dropdownLinks.forEach(link => (link as HTMLElement).style.display = "block");
         } else {
             block.classList.remove("selected");
             categoryLink.classList.remove('active');
             arrow.classList.remove('rotated');
-            dropdownLinks.forEach(link => link.style.display = "none");
+            dropdownLinks.forEach(link => (link as HTMLElement).style.display = "none");
         }
 
         categoryLink.addEventListener("click", () => {
@@ -51,12 +51,12 @@ export class Layout {
                 block.classList.remove('selected');
                 categoryLink.classList.remove('active');
                 arrow.classList.remove('rotated');
-                dropdownLinks.forEach(link => link.style.display = "none");
+                dropdownLinks.forEach(link => (link as HTMLElement).style.display = "none");
             } else {
                 block.classList.add("selected");
                 categoryLink.classList.add('active');
                 arrow.classList.add('rotated');
-                dropdownLinks.forEach(link => link.style.display = "block");
+                dropdownLinks.forEach(link => (link as HTMLElement).style.display = "block");
             }
         });
     }
@@ -76,7 +76,7 @@ export class Layout {
     }
 
 
-    public static setUserData(userInfo,userName:HTMLElement | null):void {
+    public static setUserData(userInfo:UserInfoType,userName:HTMLElement | null):void {
         if (userInfo) {
             if (userName) {
                 userName.innerText = `${userInfo.name} ${userInfo.lastName}`;

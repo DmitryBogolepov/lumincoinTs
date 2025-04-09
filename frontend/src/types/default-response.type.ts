@@ -1,5 +1,5 @@
 export type DefaultResponseType = {
     error:boolean,
-    response:string,
+    response:any,
     redirect?: string;
 }

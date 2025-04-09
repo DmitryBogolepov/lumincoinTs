@@ -1,11 +1,12 @@
 import config from "../config/config";
-import {AuthInfo, UserInfo} from "../types/Auth-tokens-response.type";
+import {AuthInfo} from "../types/Auth-tokens-response.type";
+import {UserInfoType} from "../types/userInfo.type";
 
 export class AuthUtils {
     static accessTokenKey:string = "accessToken";
     static refreshTokenKey:string = "refreshToken";
     static userInfoTokenKey:string = "userInfo";
-    static setAuthInfo(accessToken:string, refreshToken:string, userInfo:UserInfo = null):void {
+    static setAuthInfo(accessToken:string, refreshToken:string, userInfo:UserInfoType):void {
         localStorage.setItem(this.accessTokenKey, accessToken);
         localStorage.setItem(this.refreshTokenKey, refreshToken);
         if (userInfo) {
