@@ -1,7 +1,7 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
 import {OpenNewRouteType} from "../../types/open-route.type";
-import * as bootstrap from "../../../dist/js/bootstrap.min";
+import * as bootstrap from "../../../node_modules/bootstrap/dist/js/bootstrap.min";
 import {DefaultResponseType} from "../../types/default-response.type";
 import {CategoryRequestType} from "../../types/category-request.type";
 export class Income {

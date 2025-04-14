@@ -1,6 +1,6 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
-import flatpickr from "flatpickr";
+import flatpickr from "../../../node_modules/flatpickr/dist/flatpickr.min.js";
 import {OpenNewRouteType} from "../../types/open-route.type";
 import {CategoryRequestType} from "../../types/category-request.type";
 export class Create {

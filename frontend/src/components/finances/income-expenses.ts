@@ -1,10 +1,10 @@
 import { AuthUtils } from "../../utils/auth-utils";
 import { HttpUtils } from "../../utils/http-utils";
-import flatpickr from "flatpickr";
+import flatpickr from "../../../node_modules/flatpickr/dist/flatpickr.min.js";
 import {OpenNewRouteType} from "../../types/open-route.type";
 import {CategoryRequestType} from "../../types/category-request.type";
 import {DefaultResponseType} from "../../types/default-response.type";
-import * as bootstrap from "../../../dist/js/bootstrap.min";
+import * as bootstrap from "../../../node_modules/bootstrap/dist/js/bootstrap.min";
 import {OperationType} from "../../types/login-resquest.type";
 export class IncomeExpense {
     readonly openNewRoute: OpenNewRouteType;

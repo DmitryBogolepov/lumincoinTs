@@ -1,7 +1,6 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
 import {OpenNewRouteType} from "../../types/open-route.type";
-import {SignUpPostType} from "../../types/signUp-post.type";
 import {DefaultResponseType} from "../../types/default-response.type";
 
 export class SignUp {
