@@ -25,6 +25,7 @@ export class ExpensesChange {
         const params = new URLSearchParams(window.location.search);
         const id:string = params.get("id");
         if (!id) return;
+        if (!this.titleElement) return;
         try {
             const result = await HttpUtils.request(`/categories/expense/${id}`, "GET", true);
             if (result.response && result.response.title) {
@@ -43,6 +44,7 @@ export class ExpensesChange {
         const params = new URLSearchParams(window.location.search);
         const id:string = params.get("id");
         if (!id) return;
+        if (!this.titleElement) return;
         if (this.titleElement.value && this.titleElement.value.length > 0) {
             try {
                 const result = await HttpUtils.request(`/categories/expense/${id}`, "PUT", true, {

@@ -4,17 +4,18 @@ import {OpenNewRouteType} from "../../types/open-route.type";
 
 export class IncomeChange {
     readonly openNewRoute: OpenNewRouteType;
-    titleElement:HTMLInputElement | null;
-    constructor(openNewRoute:OpenNewRouteType) {
+    titleElement: HTMLInputElement | null;
+
+    constructor(openNewRoute: OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         this.getItemText();
         this.titleElement = document.getElementById("title-value") as HTMLInputElement;
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             this.openNewRoute('/sign-in');
-            return ;
+            return;
         }
 
-        const changeButton:HTMLElement | null = document.getElementById("change-button");
+        const changeButton: HTMLElement | null = document.getElementById("change-button");
         if (changeButton) {
             changeButton.addEventListener("click", this.changeIncomeItem.bind(this));
         } else {
@@ -22,31 +23,36 @@ export class IncomeChange {
         }
     }
 
-    async getItemText():Promise<string> {
+    async getItemText(): Promise<string> {
         const params = new URLSearchParams(window.location.search);
-        const id:string = params.get("id");
+        const id: string | null = params.get("id");
         if (!id) return;
-        try {
-            const result = await HttpUtils.request(`/categories/income/${id}`, "GET");
-            if (result.response && result.response.title) {
-                this.titleElement.value = result.response.title;
+        if (!this.titleElement) return;
+        if (this.titleElement.value && this.titleElement.value.length > 0) {
+            try {
+                const result = await HttpUtils.request(`/categories/income/${id}`, "GET");
+                if (result.response && result.response.title) {
+                    this.titleElement.value = result.response.title;
+                }
+                if (result.error || !result.response) {
+                    return;
+                }
+                return result.title;
+            } catch (e) {
+                console.log(e)
             }
-            if (result.error || !result.response) {
-                return;
-            }
-            return result.title;
-        } catch (e) {
-            console.log(e)
         }
     }
 
-    async changeIncomeItem():Promise<void> {
+    async changeIncomeItem(): Promise<void> {
         const params = new URLSearchParams(window.location.search);
-        const id:string = params.get("id");
+        const id: string | null = params.get("id");
+
+        if (!this.titleElement) return;
         if (this.titleElement.value && this.titleElement.value.length > 0) {
             try {
                 const result = await HttpUtils.request(`/categories/income/${id}`, "PUT", true, {
-                    title:this.titleElement.value,
+                    title: this.titleElement.value,
                 });
                 if (result.error || !result.response) {
                     return;

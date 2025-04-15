@@ -1,12 +1,14 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
 import {OpenNewRouteType} from "../../types/open-route.type";
+
 export class SignIn {
     readonly openNewRoute: OpenNewRouteType;
-    emailElement:HTMLInputElement | null;
-    passwordElement:HTMLInputElement | null;
-    rememberMeElement:HTMLInputElement | null;
-    constructor(openNewRoute:OpenNewRouteType) {
+    emailElement: HTMLInputElement | null;
+    passwordElement: HTMLInputElement | null;
+    rememberMeElement: HTMLInputElement | null;
+
+    constructor(openNewRoute: OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         if (AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             this.openNewRoute('/');
@@ -18,41 +20,47 @@ export class SignIn {
         document.getElementById('process-button').addEventListener('click', this.login.bind(this));
     }
 
-    private validateForm():boolean {
-        let isValid:boolean = true;
-        if (this.emailElement.value && this.emailElement.value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-            this.emailElement.classList.remove('is-invalid');
-        } else {
-            this.emailElement.classList.add('is-invalid');
-            isValid = false;
+    private validateForm(): boolean {
+        let isValid: boolean = true;
+        if (this.emailElement) {
+            if (this.emailElement.value && this.emailElement.value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+                this.emailElement.classList.remove('is-invalid');
+            } else {
+                this.emailElement.classList.add('is-invalid');
+                isValid = false;
+            }
         }
-        if (this.passwordElement.value) {
-            this.passwordElement.classList.remove('is-invalid');
-        } else {
-            this.passwordElement.classList.add('is-invalid');
-            isValid = false;
+        if (this.passwordElement) {
+            if (this.passwordElement.value) {
+                this.passwordElement.classList.remove('is-invalid');
+            } else {
+                this.passwordElement.classList.add('is-invalid');
+                isValid = false;
+            }
         }
         return isValid;
     }
 
-    private async login():Promise<void> {
+    private async login(): Promise<void> {
         if (this.validateForm()) {
-            const result = await HttpUtils.request('/login', 'POST', false, {
-                email: this.emailElement.value,
-                password: this.passwordElement.value,
-                rememberMe: this.rememberMeElement.checked,
-            });
-            if (result.error || !result.response ) {
-                document.getElementById('common-error').style.display = 'block';
-                return;
-            }
-            AuthUtils.setAuthInfo(
-                result.response.tokens.accessToken,
-                result.response.tokens.refreshToken,
-                result.response.user
-            );
+            if (this.emailElement && this.passwordElement && this.rememberMeElement) {
+                const result = await HttpUtils.request('/login', 'POST', false, {
+                    email: this.emailElement.value,
+                    password: this.passwordElement.value,
+                    rememberMe: this.rememberMeElement.checked,
+                });
+                if (result.error || !result.response) {
+                    document.getElementById('common-error').style.display = 'block';
+                    return;
+                }
+                AuthUtils.setAuthInfo(
+                    result.response.tokens.accessToken,
+                    result.response.tokens.refreshToken,
+                    result.response.user
+                );
 
-            await this.openNewRoute("/");
+                await this.openNewRoute("/");
+            }
         }
     }
 }

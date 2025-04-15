@@ -15,7 +15,6 @@ import {AuthUtils} from "./utils/auth-utils";
 import {Layout} from "./components/layout";
 import {RouteType} from "./types/route.type";
 import {AuthInfo} from "./types/Auth-tokens-response.type";
-import {UserInfoType} from "./types/userInfo.type";
 
 
 export class Router {
@@ -143,9 +142,10 @@ export class Router {
             },
         ]
     }
-    private initEvents():void {
-        window.addEventListener("DOMContentLoaded", this.activateRoute.bind(this));
-        window.addEventListener("popstate", this.activateRoute.bind(this));
+
+    private initEvents(): void {
+        window.addEventListener("DOMContentLoaded", (e) => this.activateRoute());
+        window.addEventListener("popstate", (e) => this.activateRoute());
         document.addEventListener("click", this.clickHandler.bind(this));
     }
 
@@ -179,39 +179,45 @@ export class Router {
 
     async activateRoute(previousRoute?: string):Promise<void> {
         const urlRoute:string = window.location.pathname;
-        const newRoute:RouteType = this.routes.find(item => item.route === urlRoute);
+        const newRoute:RouteType | undefined = this.routes.find(item => item.route === urlRoute);
         if (newRoute) {
             if (!newRoute) {
                 console.warn(`Маршрут ${urlRoute} не найден.`);
                 return;
             }
             if (newRoute.title) {
-                this.titlePageElement.innerText = newRoute.title;
+                if (this.titlePageElement) {
+                    this.titlePageElement.innerText = newRoute.title;
+                }
             }
             if (newRoute.filePathTemplate) {
-                let contentBlock:HTMLElement | null = this.contentPageElement;
+                let contentBlock: HTMLElement | null = this.contentPageElement;
+
                 if (newRoute.useLayout) {
-                    this.contentPageElement.innerHTML = await fetch(newRoute.useLayout as string).then(response => response.text());
-                    contentBlock = document.getElementById('content-layout');
+                    if (this.contentPageElement) {
+                        this.contentPageElement.innerHTML = await fetch(newRoute.useLayout as string).then(response => response.text());
+                        contentBlock = document.getElementById('content-layout');
+                    }
                 }
-                contentBlock.innerHTML = await fetch(newRoute.filePathTemplate).then(response => response.text());
+                if (contentBlock) {
+                    contentBlock.innerHTML = await fetch(newRoute.filePathTemplate).then(response => response.text());
+                }
                 new Layout();
-                const userInfo:AuthInfo = AuthUtils.getAuthInfo(AuthUtils.userInfoTokenKey);
+                const userInfo: AuthInfo = AuthUtils.getAuthInfo(AuthUtils.userInfoTokenKey);
                 if (userInfo && newRoute.useLayout) {
-                    const username:HTMLElement | null = document.getElementById('user-name');
-                    Layout.setUserData(userInfo,username);
-                    const balanceElement:HTMLElement | null = document.getElementById('balance');
-                    const navLinksElement:NodeListOf<Element> = document.querySelectorAll('.sidebar .nav-link');
-                    Layout.linksLogic(navLinksElement, urlRoute)
+                    const username: HTMLElement | null = document.getElementById('user-name');
+                    Layout.setUserData(userInfo, username);
+                    const balanceElement: HTMLElement | null = document.getElementById('balance');
+                    const navLinksElement: NodeListOf<Element> = document.querySelectorAll('.sidebar .nav-link');
+                    Layout.linksLogic(navLinksElement, urlRoute);
                     if (balanceElement) {
                         await Layout.updateBalance(balanceElement);
                     }
-                 }
+                }
             }
             if (newRoute.load && typeof newRoute.load === "function") {
                 newRoute.load();
             }
-
         }
     }
 }

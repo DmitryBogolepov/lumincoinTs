@@ -1,20 +1,22 @@
-import { AuthUtils } from "../../utils/auth-utils";
-import { HttpUtils } from "../../utils/http-utils";
-import flatpickr from "../../../node_modules/flatpickr/dist/flatpickr.min.js";
+import {AuthUtils} from "../../utils/auth-utils";
+import {HttpUtils} from "../../utils/http-utils";
+import flatpickr from "flatpickr";
 import {OpenNewRouteType} from "../../types/open-route.type";
 import {CategoryRequestType} from "../../types/category-request.type";
 import {DefaultResponseType} from "../../types/default-response.type";
-import * as bootstrap from "../../../node_modules/bootstrap/dist/js/bootstrap.min";
+import bootstrap, {Modal} from "bootstrap";
 import {OperationType} from "../../types/login-resquest.type";
+
 export class IncomeExpense {
     readonly openNewRoute: OpenNewRouteType;
-    private startDate : Date | null;
-    private endDate : Date |null;
-    private currentPeriod:string;
+    private startDate: Date | null;
+    private endDate: Date | null;
+    private currentPeriod: string;
     private categories: CategoryRequestType[];
-    private currentDeleteId :string;
-    private currentDeleteTarget: HTMLElement | null;
-    constructor(openNewRoute:OpenNewRouteType) {
+    private currentDeleteId!: string | null
+    private currentDeleteTarget!: HTMLElement | null;
+
+    constructor(openNewRoute: OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         this.currentPeriod = "all";
         this.startDate = null;
@@ -31,20 +33,20 @@ export class IncomeExpense {
         this.initDeleteButtons();
     }
 
-    async loadCategories():Promise<void> {
+    async loadCategories(): Promise<void> {
         try {
-            const incomeResult:DefaultResponseType = await HttpUtils.request("/categories/income", "GET", true);
-            const expenseResult:DefaultResponseType  = await HttpUtils.request("/categories/expense", "GET", true);
+            const incomeResult: DefaultResponseType = await HttpUtils.request("/categories/income", "GET", true);
+            const expenseResult: DefaultResponseType = await HttpUtils.request("/categories/expense", "GET", true);
 
             if (!incomeResult.error && incomeResult.response) {
                 this.categories.push(
-                    ...incomeResult.response.map((cat: any) => ({ ...cat, type: 'income' }))
+                    ...incomeResult.response.map((cat: any) => ({...cat, type: 'income'}))
                 );
             }
 
             if (!expenseResult.error && expenseResult.response) {
                 this.categories.push(
-                    ...expenseResult.response.map((cat: any) => ({ ...cat, type: 'expense' }))
+                    ...expenseResult.response.map((cat: any) => ({...cat, type: 'expense'}))
                 );
             }
         } catch (error) {
@@ -52,16 +54,16 @@ export class IncomeExpense {
         }
     }
 
-    setupButtonListeners():void {
-        const buttons:NodeListOf<Element> = document.querySelectorAll(".buttons-layout a");
+    setupButtonListeners(): void {
+        const buttons: NodeListOf<Element> = document.querySelectorAll(".buttons-layout a");
         buttons.forEach(button => {
-            button.addEventListener("click", async (event:MouseEvent):Promise<void> => {
+            button.addEventListener("click", async (event: MouseEvent): Promise<void> => {
                 await this.handleButtonClick(event, buttons);
             });
         });
     }
 
-    async handleButtonClick(event: MouseEvent, buttons:NodeListOf<Element>):Promise<void> {
+    async handleButtonClick(event: MouseEvent, buttons: NodeListOf<Element>): Promise<void> {
         buttons.forEach(btn => btn.classList.remove("btn-secondary"));
         buttons.forEach(btn => btn.classList.add("btn-outline-secondary"));
         const target = event.currentTarget as HTMLElement;
@@ -100,15 +102,15 @@ export class IncomeExpense {
         }
     }
 
-    async initDatePickers():Promise<void> {
-        const startInput:HTMLElement | null = document.getElementById("start-interval");
-        const endInput:HTMLElement | null  = document.getElementById("end-interval");
+    async initDatePickers(): Promise<void> {
+        const startInput:  HTMLInputElement | null = document.getElementById("start-interval")as HTMLInputElement;
+        const endInput:  HTMLInputElement | null = document.getElementById("end-interval")as HTMLInputElement;
 
         if (!startInput || !endInput) return;
 
         flatpickr(startInput, {
             dateFormat: "Y-m-d",
-            onChange: async (selectedDates:Date[]):Promise<void> => {
+            onChange: async (selectedDates: Date[]): Promise<void> => {
                 this.startDate = selectedDates[0];
                 await this.updateTable();
             }
@@ -116,14 +118,14 @@ export class IncomeExpense {
 
         flatpickr(endInput, {
             dateFormat: "Y-m-d",
-            onChange:async (selectedDates:Date[]):Promise<void> => {
+            onChange: async (selectedDates: Date[]): Promise<void> => {
                 this.endDate = selectedDates[0];
                 await this.updateTable();
             }
         });
     }
 
-    async updateTable():Promise<void> {
+    async updateTable(): Promise<void> {
         if (this.startDate && this.endDate) {
             const params = new URLSearchParams({
                 period: this.currentPeriod,
@@ -146,7 +148,7 @@ export class IncomeExpense {
             const params = new URLSearchParams({
                 period: this.currentPeriod || "all",
             });
-            if (this.currentPeriod === "interval") {
+            if (this.currentPeriod === "interval" && this.startDate && this.endDate) {
                 params.append("dateFrom", this.startDate.toISOString().split("T")[0]);
                 params.append("dateTo", this.endDate.toISOString().split("T")[0]);
             }
@@ -158,33 +160,34 @@ export class IncomeExpense {
         }
     }
 
-    async drawTable(data?:any):Promise<void> {
+    async drawTable(data?: any): Promise<void> {
         if (!data) {
             data = await this.getAllData();
         }
         const tbody = document.querySelector(".table tbody");
-        tbody.innerHTML = "";
 
-        (data as OperationType[]).forEach((item: OperationType, index: number): void => {
-            let typeText:string = "";
-            let typeColor:string = "";
+        if(tbody) {
+            tbody.innerHTML = "";
+            (data as OperationType[]).forEach((item: OperationType, index: number): void => {
+                let typeText: string = "";
+                let typeColor: string = "";
 
-            if (item.type === "income") {
-                typeText = "Доход";
-                typeColor = "text-success";
-            } else if (item.type === "expense") {
-                typeText = "Расход";
-                typeColor = "text-danger";
-            } else {
-                typeText = "Неизвестно";
-                typeColor = "text-muted";
-            }
-            const categoryText = item.category || '—';
+                if (item.type === "income") {
+                    typeText = "Доход";
+                    typeColor = "text-success";
+                } else if (item.type === "expense") {
+                    typeText = "Расход";
+                    typeColor = "text-danger";
+                } else {
+                    typeText = "Неизвестно";
+                    typeColor = "text-muted";
+                }
+                const categoryText = item.category || '—';
 
-            const row:HTMLTableRowElement | null = document.createElement("tr");
-            row.classList.add("table-row");
-            row.setAttribute("data-id", item.id);
-            row.innerHTML = `
+                const row: HTMLTableRowElement | null = document.createElement("tr");
+                row.classList.add("table-row");
+                row.setAttribute("data-id", item.id);
+                row.innerHTML = `
                 <th scope="row">${index + 1}</th>
                 <td class="${typeColor}">${typeText}</td>
                 <td>${categoryText}</td>
@@ -207,38 +210,53 @@ export class IncomeExpense {
                     </a>
                 </td>
             `;
-            tbody.appendChild(row);
-        });
+                tbody.appendChild(row);
+            });
+        }
     }
 
-    private initDeleteButtons():void {
-        document.addEventListener("click", (event:MouseEvent):void => {
+    private initDeleteButtons(): void {
+        document.addEventListener("click", (event: MouseEvent): void => {
             const target = event.target as HTMLElement;
-            const deleteButton = target.closest(".delete-btn") as HTMLElement | null;
+            const deleteButton = target.closest(".delete-btn");
             if (deleteButton) {
                 event.preventDefault();
-                this.currentDeleteTarget = deleteButton.closest(".table-row");
-                this.currentDeleteId = this.currentDeleteTarget.dataset.id;
-                const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
-                deleteModal.show();
-            }
-        });
-        document.getElementById("confirmDelete").addEventListener("click", async ():Promise<void> => {
-            if (this.currentDeleteTarget) {
-                try {
-                    const response:DefaultResponseType = await HttpUtils.request(`/operations/${this.currentDeleteId}`, "DELETE", true);
-                    if (!response.error) {
-                        const modalElement:HTMLElement | null = document.getElementById("deleteModal");
-                        const modalInstance = bootstrap.Modal.getInstance(modalElement);
-                        modalInstance.hide();
-                        await this.drawTable();
-                    } else {
-                        console.error("Ошибка удаления:", response);
+                const actionCard:HTMLElement | null = deleteButton.closest(".action-card");
+                if (actionCard) {
+                    this.currentDeleteTarget = actionCard;
+                    this.currentDeleteId = actionCard.dataset?.id || null;
+                    const modalElement = document.getElementById("deleteModal");
+                    if (modalElement) {
+                        const deleteModal = new bootstrap.Modal(modalElement);
+                        deleteModal.show();
                     }
-                } catch (error) {
-                    console.error("Ошибка запроса:", error);
                 }
             }
         });
+        const confirmDelete = document.getElementById("confirmDelete")
+        if (confirmDelete) {
+            confirmDelete.addEventListener("click", async (): Promise<void> => {
+                if (this.currentDeleteTarget) {
+                    try {
+                        const response: DefaultResponseType = await HttpUtils.request(`/operations/${this.currentDeleteId}`, "DELETE", true);
+                        if (!response.error) {
+                            this.currentDeleteTarget.remove();
+                            const modalElement: HTMLElement | null = document.getElementById("deleteModal");
+                            if (modalElement) {
+                                const modalInstance: Modal | null = bootstrap.Modal.getInstance(modalElement);
+                                if (modalInstance) {
+                                    modalInstance.hide();
+                                }
+                            }
+                        } else {
+                            console.error("Ошибка удаления:", response);
+                        }
+                    } catch (error) {
+                        console.error("Ошибка запроса:", error);
+                    }
+                }
+            });
+        }
     }
+
 }

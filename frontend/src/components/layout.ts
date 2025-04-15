@@ -32,37 +32,38 @@ export class Layout {
                 link.classList.remove('active');
             }
         });
-
-        if (isDropdownActive) {
-            block.classList.add("selected");
-            categoryLink.classList.add('active');
-            arrow.classList.add('rotated');
-            dropdownLinks.forEach(link => (link as HTMLElement).style.display = "block");
-        } else {
-            block.classList.remove("selected");
-            categoryLink.classList.remove('active');
-            arrow.classList.remove('rotated');
-            dropdownLinks.forEach(link => (link as HTMLElement).style.display = "none");
-        }
-
-        categoryLink.addEventListener("click", () => {
-            const isSelected:boolean = block.classList.contains('selected');
-            if (isSelected) {
-                block.classList.remove('selected');
-                categoryLink.classList.remove('active');
-                arrow.classList.remove('rotated');
-                dropdownLinks.forEach(link => (link as HTMLElement).style.display = "none");
-            } else {
+        if (block && categoryLink && arrow && dropdownLinks) {
+            if (isDropdownActive) {
                 block.classList.add("selected");
                 categoryLink.classList.add('active');
                 arrow.classList.add('rotated');
                 dropdownLinks.forEach(link => (link as HTMLElement).style.display = "block");
+            } else {
+                block.classList.remove("selected");
+                categoryLink.classList.remove('active');
+                arrow.classList.remove('rotated');
+                dropdownLinks.forEach(link => (link as HTMLElement).style.display = "none");
             }
-        });
+
+            categoryLink.addEventListener("click", () => {
+                const isSelected:boolean = block.classList.contains('selected');
+                if (isSelected) {
+                    block.classList.remove('selected');
+                    categoryLink.classList.remove('active');
+                    arrow.classList.remove('rotated');
+                    dropdownLinks.forEach(link => (link as HTMLElement).style.display = "none");
+                } else {
+                    block.classList.add("selected");
+                    categoryLink.classList.add('active');
+                    arrow.classList.add('rotated');
+                    dropdownLinks.forEach(link => (link as HTMLElement).style.display = "block");
+                }
+            });
+        }
     }
 
 
-    public static async updateBalance(balanceItem:HTMLElement | null):Promise<void> {
+    public static async updateBalance(balanceItem:HTMLElement):Promise<void> {
         try {
             const result:DefaultResponseType = await HttpUtils.request('/balance', 'GET', true,null);
             if (result.error) {

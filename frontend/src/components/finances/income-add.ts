@@ -15,6 +15,7 @@ export class IncomeAdd {
         document.getElementById('create-button').addEventListener('click', this.addNewIncomeItem.bind(this))
     }
     async addNewIncomeItem():Promise<void> {
+        if (!this.titleElement) return;
         if (this.titleElement.value && this.titleElement.value.length > 0) {
             try {
                 const result = await HttpUtils.request("/categories/income", "POST", true, {
