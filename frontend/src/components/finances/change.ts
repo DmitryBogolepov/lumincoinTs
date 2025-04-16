@@ -26,12 +26,15 @@ export class Change {
         }
         this.loadData();
         this.typeElement.addEventListener('change', this.onTypeChange.bind(this));
-        document.getElementById('process-button').addEventListener('click', this.createNewInfo.bind(this));
+        const processButton:HTMLElement | null = document.getElementById('process-button');
+        if(processButton) {
+            processButton.addEventListener('click', this.createNewInfo.bind(this));
+        }
     }
 
     private async loadData():Promise<void> {
         const params = new URLSearchParams(window.location.search);
-        const id:string = params.get("id");
+        const id:string | null = params.get("id");
         if (id) {
             try {
                 const result = await HttpUtils.request(`/operations/${id}`, "GET", true, null);
@@ -120,8 +123,8 @@ export class Change {
         const amount:number = Number(this.amountElement.value);
         const date:string = this.dateElement.value.trim();
         const comment:string = this.commentaryElement.value.trim();
-        const params = new URLSearchParams(window.location.search);
-        const id:string = params.get("id");
+        const params:URLSearchParams = new URLSearchParams(window.location.search);
+        const id:string | null= params.get("id");
         if (!id) return;
         const isValid:boolean = this.validateData(type, category_id, amount, date, comment);
         if (!isValid) {

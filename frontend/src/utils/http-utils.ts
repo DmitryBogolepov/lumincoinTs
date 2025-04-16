@@ -16,7 +16,7 @@ export class HttpUtils {
                 'Accept': 'application/json',
             },
         };
-        let token:string | null;
+        let token:string | null = null;
         if (useAuth) {
             token = AuthUtils.getAuthInfo(AuthUtils.accessTokenKey) as string | null;
             if (token) {

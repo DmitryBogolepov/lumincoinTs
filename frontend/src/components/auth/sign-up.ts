@@ -12,7 +12,10 @@ export class SignUp {
 
     constructor(openNewRoute: OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
-
+        this.passwordRepeatElement = null;
+        this.nameElement = null;
+        this.passwordElement= null;
+        this.emailElement = null;
         if (AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             this.openNewRoute('/');
             return;
@@ -22,7 +25,10 @@ export class SignUp {
         this.nameElement = document.getElementById('name') as HTMLInputElement;
         this.passwordElement = document.getElementById('password') as HTMLInputElement;
         this.passwordRepeatElement = document.getElementById('password-repeat') as HTMLInputElement;
-        document.getElementById('process-button').addEventListener('click', this.signUp.bind(this));
+        const processButton:HTMLElement | null = document.getElementById('process-button');
+        if(processButton) {
+            processButton.addEventListener('click', this.signUp.bind(this));
+        }
     }
 
     private validateForm(): boolean {

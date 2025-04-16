@@ -21,9 +21,9 @@ export class ExpensesChange {
         }
     }
 
-    private async getItemText():Promise<string> {
-        const params = new URLSearchParams(window.location.search);
-        const id:string = params.get("id");
+    private async getItemText():Promise<string | undefined> {
+        const params:URLSearchParams = new URLSearchParams(window.location.search);
+        const id:string | null = params.get("id");
         if (!id) return;
         if (!this.titleElement) return;
         try {
@@ -42,7 +42,7 @@ export class ExpensesChange {
 
     private async changeExpensesItem():Promise<void> {
         const params = new URLSearchParams(window.location.search);
-        const id:string = params.get("id");
+        const id:string | null = params.get("id");
         if (!id) return;
         if (!this.titleElement) return;
         if (this.titleElement.value && this.titleElement.value.length > 0) {

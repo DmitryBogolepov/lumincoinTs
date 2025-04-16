@@ -23,7 +23,7 @@ export class IncomeChange {
         }
     }
 
-    async getItemText(): Promise<string> {
+    async getItemText(): Promise<string | undefined> {
         const params = new URLSearchParams(window.location.search);
         const id: string | null = params.get("id");
         if (!id) return;

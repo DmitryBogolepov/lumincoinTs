@@ -1,5 +1,5 @@
-import {SignIn} from "./components/auth/sign-in.js";
-import {SignUp} from "./components/auth/sign-up.js";
+import {SignIn} from "./components/auth/sign-in";
+import {SignUp} from "./components/auth/sign-up";
 import {Logout} from "./components/auth/logout";
 import {Main} from "./components/main";
 import {Income} from "./components/finances/income";
@@ -18,7 +18,7 @@ import {AuthInfo} from "./types/Auth-tokens-response.type";
 
 
 export class Router {
-    private titlePageElement : HTMLElement | null;
+    readonly titlePageElement : HTMLElement | null;
     readonly contentPageElement: HTMLElement | null;
     private routes:RouteType[];
     constructor() {
@@ -203,10 +203,10 @@ export class Router {
                     contentBlock.innerHTML = await fetch(newRoute.filePathTemplate).then(response => response.text());
                 }
                 new Layout();
-                const userInfo: AuthInfo = AuthUtils.getAuthInfo(AuthUtils.userInfoTokenKey);
+                const userInfo: AuthInfo | string | null = AuthUtils.getAuthInfo(AuthUtils.userInfoTokenKey);
                 if (userInfo && newRoute.useLayout) {
                     const username: HTMLElement | null = document.getElementById('user-name');
-                    Layout.setUserData(userInfo, username);
+                    // Layout.setUserData(userInfo, username);
                     const balanceElement: HTMLElement | null = document.getElementById('balance');
                     const navLinksElement: NodeListOf<Element> = document.querySelectorAll('.sidebar .nav-link');
                     Layout.linksLogic(navLinksElement, urlRoute);

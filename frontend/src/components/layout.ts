@@ -89,25 +89,26 @@ export class Layout {
         const userAction:HTMLElement | null = document.getElementById("user-click");
         const closeModal:HTMLElement | null = document.getElementById("close-modal");
 
-        if (userAction && this.modal) {
-            userAction.addEventListener("click", function (event:MouseEvent) {
-                event.preventDefault();
-                this.modal.style.display = "flex";
-            }.bind(this));
-        }
+         if (userAction && this.modal) {
+             userAction.addEventListener("click", (event: MouseEvent) => {
+                 event.preventDefault();
+                 this.modal!.style.display = "flex";
+             });
+         }
 
-        if (closeModal && this.modal) {
-            closeModal.addEventListener("click", function () {
-                this.modal.style.display = "none";
-            }.bind(this));
-        }
+         if (closeModal && this.modal) {
+             closeModal.addEventListener("click", ():void => {
+                 this.modal!.style.display = "none";
+             });
+         }
 
-        if (this.modal) {
-            window.addEventListener("click", function (event:MouseEvent) {
-                if (event.target === this.modal) {
-                    this.modal.style.display = "none";
-                }
-            }.bind(this));
-        }
+         if (this.modal) {
+             window.addEventListener("click", (event: MouseEvent): void => {
+                 const target:HTMLElement | null = event.target as HTMLElement;
+                 if (target && target === this.modal) {
+                     this.modal.style.display = "none";
+                 }
+             });
+         }
     }
 }

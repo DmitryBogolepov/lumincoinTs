@@ -9,6 +9,9 @@ module.exports = {
         filename: 'app.js',
         path: path.resolve(__dirname, 'dist'),
     },
+    resolve: {
+        extensions: ['.ts', '.js'],
+    },
     devServer: {
         static: {
             directory: path.join(__dirname, 'public'),

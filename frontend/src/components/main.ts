@@ -1,7 +1,7 @@
 import {AuthUtils} from "../utils/auth-utils";
 import {HttpUtils} from "../utils/http-utils";
 import flatpickr from "flatpickr";
-import {Chart} from "chart.js";
+import {Chart, ChartType} from "chart.js";
 import {registerables} from "chart.js";
 import {OpenNewRouteType} from "../types/open-route.type";
 import {DefaultResponseType} from "../types/default-response.type";
@@ -33,8 +33,8 @@ export class Main {
     private setupButtonListeners():void {
         const buttons:NodeListOf<Element> = document.querySelectorAll(".buttons-layout a");
         buttons.forEach(button => {
-            button.addEventListener("click", async (event:MouseEvent):Promise<void> => {
-                await this.handleButtonClick(event, buttons);
+            button.addEventListener("click", async (event:Event):Promise<void> => {
+                await this.handleButtonClick(event as MouseEvent, buttons);
             });
         });
     }
@@ -44,7 +44,7 @@ export class Main {
         const target = event.currentTarget as HTMLElement;
         target.classList.add("btn-secondary");
         target.classList.remove("btn-outline-secondary");
-        const buttonText = target.innerText;
+        const buttonText:string = target.innerText;
         switch (buttonText) {
             case "Сегодня":
                 this.currentPeriod = "day";
@@ -78,23 +78,24 @@ export class Main {
     private async initDatePickers():Promise<void> {
         const startInput:HTMLElement | null = document.getElementById("start-interval");
         const endInput:HTMLElement | null = document.getElementById("end-interval");
+        if (startInput && endInput) {
+            flatpickr(startInput, {
+                dateFormat: "Y-m-d",
+                onChange: (selectedDates:Date[]):void => {
+                    this.startDate = selectedDates[0];
+                    this.updateCharts();
+                }
+            });
 
-        flatpickr(startInput, {
-            dateFormat: "Y-m-d",
-            onChange: (selectedDates:Date[]):void => {
-                this.startDate = selectedDates[0];
-                this.updateCharts();
-            }
-        });
 
-
-        flatpickr(endInput, {
-            dateFormat: "Y-m-d",
-            onChange: (selectedDates:Date[]):void => {
-                this.endDate = selectedDates[0];
-                this.updateCharts();
-            }
-        });
+            flatpickr(endInput, {
+                dateFormat: "Y-m-d",
+                onChange: (selectedDates:Date[]):void => {
+                    this.endDate = selectedDates[0];
+                    this.updateCharts();
+                }
+            });
+        }
     }
 
     async updateCharts():Promise<void> {
@@ -119,13 +120,13 @@ export class Main {
         try {
             if (!data) {
                 data = await this.getAllData();
+            } else {
+                const incomeItems:DataType[] = data.filter(item => item.type === "income");
+                const expenseItems:DataType[] = data.filter(item => item.type !== "income");
+
+                this.createChart("incomeChart", "Доходы", incomeItems, this.incomeChart);
+                this.createChart("expensesChart", "Расходы", expenseItems, this.expensesChart);
             }
-
-            const incomeItems:DataType[] = data.filter(item => item.type === "income");
-            const expenseItems:DataType[] = data.filter(item => item.type !== "income");
-
-            this.createChart("incomeChart", "Доходы", incomeItems, this.incomeChart);
-            this.createChart("expensesChart", "Расходы", expenseItems, this.expensesChart);
         } catch (error) {
             console.error("Ошибка при загрузке данных:", error);
         }
@@ -133,11 +134,11 @@ export class Main {
 
     async getAllData():Promise<any> {
         try {
-            const params = new URLSearchParams({
+            const params:URLSearchParams = new URLSearchParams({
                 period: this.currentPeriod || "all",
             });
 
-            if (this.currentPeriod === "interval") {
+            if (this.currentPeriod === "interval" && this.endDate && this.startDate) {
                 params.append("dateFrom", this.startDate.toISOString().split("T")[0]);
                 params.append("dateTo", this.endDate.toISOString().split("T")[0]);
             }
@@ -158,12 +159,12 @@ export class Main {
                 items: DataType[],
                 existingChart: Chart | null) {
         Chart.register(...registerables);
-        const ctx:CanvasRenderingContext2D = (document.getElementById(canvasId) as HTMLCanvasElement)?.getContext("2d");
+        const ctx:CanvasRenderingContext2D | null = (document.getElementById(canvasId) as HTMLCanvasElement)?.getContext("2d");
         if (!ctx) return;
         if (existingChart) {
             existingChart.destroy();
         }
-        const chart = new Chart(ctx, {
+        const chart:Chart<ChartType> = new Chart(ctx, {
             type: "pie",
             data: {
                 labels: items.map(item => item.comment || "Без названия"),

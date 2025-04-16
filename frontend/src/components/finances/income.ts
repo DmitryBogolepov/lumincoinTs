@@ -13,6 +13,7 @@ export class Income {
 
     constructor(openNewRoute: OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
+        this.currentDeleteTarget = null;
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             this.openNewRoute('/sign-in');
             return;
@@ -68,13 +69,15 @@ export class Income {
 
     private async initEditButtons(): Promise<void> {
         document.addEventListener("click", async (event: MouseEvent): Promise<void> => {
-            const editButton = (event.target as HTMLElement).closest(".redact-btn");
+            const editButton:Element | null= (event.target as HTMLElement).closest(".redact-btn");
             if (editButton) {
                 event.preventDefault();
-                const card = editButton.closest(".action-card") as HTMLElement;
-                const id: string | number = card.dataset.id;
-                if (id) {
-                    await this.openNewRoute(`/incomeChange?id=${id}`);
+                const card:HTMLElement | undefined = editButton.closest(".action-card") as HTMLElement;
+                if (card) {
+                    const id: string | number | undefined= card.dataset.id;
+                    if (id !== undefined) {
+                        await this.openNewRoute(`/incomeChange?id=${id}`);
+                    }
                 }
             }
         });

@@ -72,7 +72,7 @@ export class Expenses {
             if (editButton) {
                 event.preventDefault();
                 const card = editButton.closest(".action-card") as HTMLElement;
-                const id: string = card.dataset.id;
+                const id: string | undefined = card.dataset.id;
                 if (id) {
                     await this.openNewRoute(`/expensesChange?id=${id}`);
                 }

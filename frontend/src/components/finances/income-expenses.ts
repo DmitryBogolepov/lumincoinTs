@@ -57,8 +57,8 @@ export class IncomeExpense {
     setupButtonListeners(): void {
         const buttons: NodeListOf<Element> = document.querySelectorAll(".buttons-layout a");
         buttons.forEach(button => {
-            button.addEventListener("click", async (event: MouseEvent): Promise<void> => {
-                await this.handleButtonClick(event, buttons);
+            button.addEventListener("click", async (event: Event): Promise<void> => {
+                await this.handleButtonClick(event as MouseEvent, buttons);
             });
         });
     }

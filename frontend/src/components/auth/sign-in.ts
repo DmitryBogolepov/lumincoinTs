@@ -10,14 +10,17 @@ export class SignIn {
 
     constructor(openNewRoute: OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
-        if (AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
-            this.openNewRoute('/');
-            return
-        }
         this.emailElement = document.getElementById('email') as HTMLInputElement;
         this.passwordElement = document.getElementById('password') as HTMLInputElement;
         this.rememberMeElement = document.getElementById('remember-me') as HTMLInputElement;
-        document.getElementById('process-button').addEventListener('click', this.login.bind(this));
+        if (AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
+            this.openNewRoute('/');
+            return;
+        }
+        const processButton:HTMLElement |null = document.getElementById('process-button');
+        if(processButton) {
+            processButton.addEventListener('click', this.login.bind(this));
+        }
     }
 
     private validateForm(): boolean {
@@ -50,7 +53,10 @@ export class SignIn {
                     rememberMe: this.rememberMeElement.checked,
                 });
                 if (result.error || !result.response) {
-                    document.getElementById('common-error').style.display = 'block';
+                    const commonError:HTMLElement | null = document.getElementById('common-error');
+                    if(commonError) {
+                        commonError.style.display = 'block';
+                    }
                     return;
                 }
                 AuthUtils.setAuthInfo(

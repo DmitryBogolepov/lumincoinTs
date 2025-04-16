@@ -15,7 +15,10 @@ export class ExpensesAdd {
             this.openNewRoute('/sign-in');
             return;
         }
-        document.getElementById('create-button').addEventListener('click', this.addNewIncomeItem.bind(this))
+        const createButton:HTMLElement | null = document.getElementById('create-button');
+        if(createButton) {
+            createButton.addEventListener('click', this.addNewIncomeItem.bind(this));
+        }
     }
 
     private async addNewIncomeItem(): Promise<void> {

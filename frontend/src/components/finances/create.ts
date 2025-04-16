@@ -25,7 +25,10 @@ export class Create {
         }
         this.setSelectValue();
         this.typeElement.addEventListener('change', this.onTypeChange.bind(this));
-        document.getElementById('process-button').addEventListener('click', this.createNewInfo.bind(this));
+        const processButton:HTMLElement | null = document.getElementById('process-button');
+        if(processButton) {
+            processButton.addEventListener('click', this.createNewInfo.bind(this));
+        }
     }
 
     private async onTypeChange():Promise<void> {
@@ -41,7 +44,11 @@ export class Create {
         }
 
         categories.forEach(category => {
-            this.categoriesList.push({ id: category.id, title: category.title });
+            this.categoriesList.push({
+                id: category.id,
+                title: category.title,
+                type: selectedType as 'income' | 'expense'
+            });
             let option:HTMLOptionElement = document.createElement('option');
             option.value = category.title;
             option.text = category.title;
@@ -97,8 +104,8 @@ export class Create {
 
 
     private async setSelectValue():Promise<void> {
-        const urlParams = new URLSearchParams(window.location.search);
-        const type:string = urlParams.get("type");
+        const urlParams:URLSearchParams = new URLSearchParams(window.location.search);
+        const type:string | null = urlParams.get("type");
         if (type) {
             this.typeElement.value = type;
             await this.onTypeChange();
@@ -118,7 +125,7 @@ export class Create {
         }
 
         const foundCategory = this.categoriesList.find(c => c.title === categoryTitle);
-        const categoryId:number = foundCategory ? foundCategory.id : null;
+        const categoryId:number | null = foundCategory ? foundCategory.id : null;
         if (!categoryId) {
             console.error("Ошибка: Не удалось найти ID категории");
             return;

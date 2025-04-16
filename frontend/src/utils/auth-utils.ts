@@ -20,7 +20,7 @@ export class AuthUtils {
         localStorage.removeItem(this.userInfoTokenKey);
     }
 
-    public static getAuthInfo(key?:string):AuthInfo {
+    public static getAuthInfo(key?:string):AuthInfo | string | null{
         if (key && [this.accessTokenKey, this.refreshTokenKey, this.userInfoTokenKey].includes(key)) {
             return localStorage.getItem(key);
         } else {
