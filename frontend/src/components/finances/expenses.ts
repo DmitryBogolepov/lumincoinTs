@@ -2,7 +2,7 @@ import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
 import {OpenNewRouteType} from "../../types/open-route.type";
 import {DefaultResponseType} from "../../types/default-response.type";
-import bootstrap from "bootstrap";
+import * as bootstrap from "bootstrap";
 import {CategoryRequestType} from "../../types/category-request.type";
 
 export class Expenses {

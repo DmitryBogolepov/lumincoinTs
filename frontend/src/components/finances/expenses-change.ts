@@ -16,8 +16,6 @@ export class ExpensesChange {
         const changeButton = document.getElementById("change-button");
         if (changeButton) {
             changeButton.addEventListener("click", this.changeExpensesItem.bind(this));
-        } else {
-            console.error("Кнопка редактирования не найдена!");
         }
     }
 
@@ -41,7 +39,7 @@ export class ExpensesChange {
     }
 
     private async changeExpensesItem():Promise<void> {
-        const params = new URLSearchParams(window.location.search);
+        const params:URLSearchParams = new URLSearchParams(window.location.search);
         const id:string | null = params.get("id");
         if (!id) return;
         if (!this.titleElement) return;

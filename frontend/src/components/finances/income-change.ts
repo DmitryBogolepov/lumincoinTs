@@ -8,46 +8,40 @@ export class IncomeChange {
 
     constructor(openNewRoute: OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
-        this.getItemText();
         this.titleElement = document.getElementById("title-value") as HTMLInputElement;
+        this.getItemText();
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             this.openNewRoute('/sign-in');
             return;
         }
-
         const changeButton: HTMLElement | null = document.getElementById("change-button");
         if (changeButton) {
             changeButton.addEventListener("click", this.changeIncomeItem.bind(this));
-        } else {
-            console.error("Кнопка редактирования не найдена!");
         }
     }
 
     async getItemText(): Promise<string | undefined> {
-        const params = new URLSearchParams(window.location.search);
+        const params: URLSearchParams = new URLSearchParams(window.location.search);
         const id: string | null = params.get("id");
-        if (!id) return;
-        if (!this.titleElement) return;
-        if (this.titleElement.value && this.titleElement.value.length > 0) {
+        if (!id || !this.titleElement) return;
+        if (!this.titleElement.value || this.titleElement.value.length === 0) {
             try {
                 const result = await HttpUtils.request(`/categories/income/${id}`, "GET");
                 if (result.response && result.response.title) {
+                    console.log(this.titleElement.value);
                     this.titleElement.value = result.response.title;
+                    return result.response.title;
                 }
-                if (result.error || !result.response) {
-                    return;
-                }
-                return result.title;
+                return;
             } catch (e) {
-                console.log(e)
+                console.error("Ошибка при получении категории:", e);
             }
         }
     }
 
     async changeIncomeItem(): Promise<void> {
-        const params = new URLSearchParams(window.location.search);
+        const params:URLSearchParams = new URLSearchParams(window.location.search);
         const id: string | null = params.get("id");
-
         if (!this.titleElement) return;
         if (this.titleElement.value && this.titleElement.value.length > 0) {
             try {

@@ -4,7 +4,7 @@ import flatpickr from "flatpickr";
 import {OpenNewRouteType} from "../../types/open-route.type";
 import {CategoryRequestType} from "../../types/category-request.type";
 import {DefaultResponseType} from "../../types/default-response.type";
-import bootstrap, {Modal} from "bootstrap";
+import * as bootstrap from "bootstrap";
 import {OperationType} from "../../types/login-resquest.type";
 
 export class IncomeExpense {
@@ -233,7 +233,7 @@ export class IncomeExpense {
                 }
             }
         });
-        const confirmDelete = document.getElementById("confirmDelete")
+        const confirmDelete:HTMLElement | null = document.getElementById("confirmDelete")
         if (confirmDelete) {
             confirmDelete.addEventListener("click", async (): Promise<void> => {
                 if (this.currentDeleteTarget) {
@@ -243,7 +243,7 @@ export class IncomeExpense {
                             this.currentDeleteTarget.remove();
                             const modalElement: HTMLElement | null = document.getElementById("deleteModal");
                             if (modalElement) {
-                                const modalInstance: Modal | null = bootstrap.Modal.getInstance(modalElement);
+                                const modalInstance: any | null = bootstrap.Modal.getInstance(modalElement);
                                 if (modalInstance) {
                                     modalInstance.hide();
                                 }

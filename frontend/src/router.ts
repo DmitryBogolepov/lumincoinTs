@@ -15,6 +15,7 @@ import {AuthUtils} from "./utils/auth-utils";
 import {Layout} from "./components/layout";
 import {RouteType} from "./types/route.type";
 import {AuthInfo} from "./types/Auth-tokens-response.type";
+import {UserInfoType} from "./types/userInfo.type";
 
 
 export class Router {
@@ -167,7 +168,7 @@ export class Router {
 
         if (element) {
             e.preventDefault();
-            const currentRoute = window.location.pathname;
+            const currentRoute:string = window.location.pathname;
             const url:string = element.href.replace(window.location.origin, '');
 
             if (!url || (currentRoute === url.replace('#', '')) || url.startsWith("javascript:void(0)")) {
@@ -203,10 +204,13 @@ export class Router {
                     contentBlock.innerHTML = await fetch(newRoute.filePathTemplate).then(response => response.text());
                 }
                 new Layout();
-                const userInfo: AuthInfo | string | null = AuthUtils.getAuthInfo(AuthUtils.userInfoTokenKey);
-                if (userInfo && newRoute.useLayout) {
+                const rawAuth = AuthUtils.getAuthInfo() as AuthInfo | null;
+                const parsed = rawAuth ? AuthUtils.parseAuthInfo(rawAuth) : null;
+                if (parsed && newRoute.useLayout) {
+                    const userInfo = parsed.userInfoTokenKey;
                     const username: HTMLElement | null = document.getElementById('user-name');
-                    // Layout.setUserData(userInfo, username);
+                    Layout.setUserData(userInfo, username);
+
                     const balanceElement: HTMLElement | null = document.getElementById('balance');
                     const navLinksElement: NodeListOf<Element> = document.querySelectorAll('.sidebar .nav-link');
                     Layout.linksLogic(navLinksElement, urlRoute);

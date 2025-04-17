@@ -1,7 +1,7 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
 import {OpenNewRouteType} from "../../types/open-route.type";
-import bootstrap from "bootstrap";
+import * as bootstrap from "bootstrap";
 import {DefaultResponseType} from "../../types/default-response.type";
 import {CategoryRequestType} from "../../types/category-request.type";
 import {Modal} from "bootstrap";
@@ -33,7 +33,7 @@ export class Income {
                 if (actionCard) {
                     this.currentDeleteTarget = actionCard;
                     this.currentDeleteId = actionCard.dataset?.id || null;
-                    const modalElement = document.getElementById("deleteModal");
+                    const modalElement:HTMLElement | null = document.getElementById("deleteModal");
                     if (modalElement) {
                         const deleteModal = new bootstrap.Modal(modalElement);
                         deleteModal.show();
@@ -75,7 +75,7 @@ export class Income {
                 const card:HTMLElement | undefined = editButton.closest(".action-card") as HTMLElement;
                 if (card) {
                     const id: string | number | undefined= card.dataset.id;
-                    if (id !== undefined) {
+                    if (id) {
                         await this.openNewRoute(`/incomeChange?id=${id}`);
                     }
                 }

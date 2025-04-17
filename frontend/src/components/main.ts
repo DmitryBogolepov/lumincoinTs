@@ -100,7 +100,7 @@ export class Main {
 
     async updateCharts():Promise<void> {
         if (this.startDate && this.endDate) {
-            const params = new URLSearchParams({
+            const params :URLSearchParams= new URLSearchParams({
                 period: this.currentPeriod,
                 dateFrom: this.startDate.toISOString().split("T")[0],
                 dateTo: this.endDate.toISOString().split("T")[0]
@@ -120,12 +120,12 @@ export class Main {
         try {
             if (!data) {
                 data = await this.getAllData();
-            } else {
-                const incomeItems:DataType[] = data.filter(item => item.type === "income");
-                const expenseItems:DataType[] = data.filter(item => item.type !== "income");
-
-                this.createChart("incomeChart", "Доходы", incomeItems, this.incomeChart);
-                this.createChart("expensesChart", "Расходы", expenseItems, this.expensesChart);
+                if (data?.filter) {
+                    const incomeItems:DataType[] = data.filter(item => item.type === "income");
+                    const expenseItems:DataType[] = data.filter(item => item.type !== "income");
+                    this.createChart("incomeChart", "Доходы", incomeItems, this.incomeChart);
+                    this.createChart("expensesChart", "Расходы", expenseItems, this.expensesChart);
+                }
             }
         } catch (error) {
             console.error("Ошибка при загрузке данных:", error);

@@ -1,6 +1,7 @@
 import {HttpUtils} from "../utils/http-utils";
 import {DefaultResponseType} from "../types/default-response.type";
 import {UserInfoType} from "../types/userInfo.type";
+import {AuthInfo} from "../types/Auth-tokens-response.type";
 
 export class Layout {
     readonly modal:HTMLElement | null

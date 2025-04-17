@@ -1,5 +1,5 @@
 import config from "../config/config";
-import {AuthInfo} from "../types/Auth-tokens-response.type";
+import {AuthInfo, ParsedAuthInfo} from "../types/Auth-tokens-response.type";
 import {UserInfoType} from "../types/userInfo.type";
 
 export class AuthUtils {
@@ -20,19 +20,41 @@ export class AuthUtils {
         localStorage.removeItem(this.userInfoTokenKey);
     }
 
-    public static getAuthInfo(key?:string):AuthInfo | string | null{
+    public static getAuthInfo(key?:string):string |AuthInfo | null{
         if (key && [this.accessTokenKey, this.refreshTokenKey, this.userInfoTokenKey].includes(key)) {
             return localStorage.getItem(key);
         } else {
             return {
-                [this.accessTokenKey]: localStorage.getItem(this.accessTokenKey),
-                [this.refreshTokenKey]: localStorage.getItem(this.refreshTokenKey),
-                [this.userInfoTokenKey]: localStorage.getItem(this.userInfoTokenKey),
+                accessTokenKey: localStorage.getItem(this.accessTokenKey),
+                refreshTokenKey: localStorage.getItem(this.refreshTokenKey),
+                userInfoTokenKey: localStorage.getItem(this.userInfoTokenKey),
             }
         }
     }
+
+    public static parseAuthInfo(auth: AuthInfo): ParsedAuthInfo | null {
+        if (
+            auth.accessTokenKey &&
+            auth.refreshTokenKey &&
+            auth.userInfoTokenKey
+        ) {
+            try {
+                const parsedUser: UserInfoType = JSON.parse(auth.userInfoTokenKey);
+                return {
+                    accessTokenKey: auth.accessTokenKey,
+                    refreshTokenKey: auth.refreshTokenKey,
+                    userInfoTokenKey: parsedUser,
+                };
+            } catch (e) {
+                console.error("Ошибка парсинга userInfoTokenKey:", e);
+                return null;
+            }
+        }
+        return null;
+    }
+
     static async updateRefreshToken():Promise<boolean> {
-       let refreshToken:AuthInfo = this.getAuthInfo(this.refreshTokenKey) as string | null;
+       let refreshToken = this.getAuthInfo(this.refreshTokenKey) as string | null;
         if (!refreshToken) {
             return false;
         }
