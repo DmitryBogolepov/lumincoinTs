@@ -4,6 +4,7 @@ import {OpenNewRouteType} from "../../types/open-route.type";
 import {DefaultResponseType} from "../../types/default-response.type";
 import * as bootstrap from "bootstrap";
 import {CategoryRequestType} from "../../types/category-request.type";
+import {Modal} from "bootstrap";
 
 export class Expenses {
     readonly openNewRoute: OpenNewRouteType;
@@ -22,16 +23,16 @@ export class Expenses {
     }
 
     private initDeleteButtons(): void {
-        document.addEventListener("click", (event: MouseEvent) => {
+        document.addEventListener("click", (event: MouseEvent): void => {
             const target = event.target as HTMLElement;
             const deleteButton = target.closest(".delete-btn");
             if (deleteButton) {
                 event.preventDefault();
-                const actionCard:HTMLElement | null = deleteButton.closest(".action-card");
+                const actionCard: HTMLElement | null = deleteButton.closest(".action-card");
                 if (actionCard) {
                     this.currentDeleteTarget = actionCard;
                     this.currentDeleteId = actionCard.dataset?.id || null;
-                    const modalElement = document.getElementById("deleteModal");
+                    const modalElement: HTMLElement | null = document.getElementById("deleteModal");
                     if (modalElement) {
                         const deleteModal = new bootstrap.Modal(modalElement);
                         deleteModal.show();
@@ -39,7 +40,8 @@ export class Expenses {
                 }
             }
         });
-        const confirmDelete:HTMLElement | null = document.getElementById("confirmDelete")
+
+        const confirmDelete: HTMLElement | null = document.getElementById("confirmDelete");
         if (confirmDelete) {
             confirmDelete.addEventListener("click", async (): Promise<void> => {
                 if (this.currentDeleteTarget && this.currentDeleteId) {
@@ -49,7 +51,7 @@ export class Expenses {
                             this.currentDeleteTarget.remove();
                             const modalElement: HTMLElement | null = document.getElementById("deleteModal");
                             if (modalElement) {
-                                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                                const modalInstance: Modal | null = bootstrap.Modal.getInstance(modalElement);
                                 if (modalInstance) {
                                     modalInstance.hide();
                                 }
@@ -63,7 +65,6 @@ export class Expenses {
                 }
             });
         }
-
     }
 
     private async initEditButtons(): Promise<void> {

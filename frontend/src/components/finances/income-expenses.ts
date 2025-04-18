@@ -6,6 +6,7 @@ import {CategoryRequestType} from "../../types/category-request.type";
 import {DefaultResponseType} from "../../types/default-response.type";
 import * as bootstrap from "bootstrap";
 import {OperationType} from "../../types/login-resquest.type";
+import {Modal} from "bootstrap";
 
 export class IncomeExpense {
     readonly openNewRoute: OpenNewRouteType;
@@ -127,7 +128,7 @@ export class IncomeExpense {
 
     async updateTable(): Promise<void> {
         if (this.startDate && this.endDate) {
-            const params = new URLSearchParams({
+            const params:URLSearchParams = new URLSearchParams({
                 period: this.currentPeriod,
                 dateFrom: this.startDate.toISOString().split("T")[0],
                 dateTo: this.endDate.toISOString().split("T")[0]
@@ -149,8 +150,14 @@ export class IncomeExpense {
                 period: this.currentPeriod || "all",
             });
             if (this.currentPeriod === "interval" && this.startDate && this.endDate) {
-                params.append("dateFrom", this.startDate.toISOString().split("T")[0]);
-                params.append("dateTo", this.endDate.toISOString().split("T")[0]);
+                const localStartDate = this.startDate.toLocaleDateString('en-CA'); // 'en-CA' для формата YYYY-MM-DD
+                const localEndDate = this.endDate.toLocaleDateString('en-CA');
+
+                console.log("Start Date:", localStartDate);
+                console.log("End Date:", localEndDate);
+
+                params.append("dateFrom", localStartDate);
+                params.append("dateTo", localEndDate);
             }
             const result = await HttpUtils.request(`/operations?${params}`, "GET", true);
             return result.response || [];
@@ -217,17 +224,19 @@ export class IncomeExpense {
 
     private initDeleteButtons(): void {
         document.addEventListener("click", (event: MouseEvent): void => {
-            const target = event.target as HTMLElement;
-            const deleteButton = target.closest(".delete-btn");
+            const target:HTMLElement = event.target as HTMLAnchorElement;
+            const deleteButton = target.closest("a.delete-btn");
             if (deleteButton) {
+                console.log("Клик по delete:", target);
                 event.preventDefault();
                 const actionCard:HTMLElement | null = deleteButton.closest(".action-card");
                 if (actionCard) {
                     this.currentDeleteTarget = actionCard;
                     this.currentDeleteId = actionCard.dataset?.id || null;
-                    const modalElement = document.getElementById("deleteModal");
+                    const modalElement:HTMLElement | null = document.getElementById("deleteModal");
                     if (modalElement) {
-                        const deleteModal = new bootstrap.Modal(modalElement);
+                        console.log("Нашли модалку:", modalElement);
+                        const deleteModal:Modal = new bootstrap.Modal(modalElement);
                         deleteModal.show();
                     }
                 }

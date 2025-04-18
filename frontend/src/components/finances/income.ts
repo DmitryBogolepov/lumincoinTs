@@ -29,11 +29,11 @@ export class Income {
             const deleteButton = target.closest(".delete-btn");
             if (deleteButton) {
                 event.preventDefault();
-                const actionCard:HTMLElement | null = deleteButton.closest(".action-card");
+                const actionCard: HTMLElement | null = deleteButton.closest(".action-card");
                 if (actionCard) {
                     this.currentDeleteTarget = actionCard;
                     this.currentDeleteId = actionCard.dataset?.id || null;
-                    const modalElement:HTMLElement | null = document.getElementById("deleteModal");
+                    const modalElement: HTMLElement | null = document.getElementById("deleteModal");
                     if (modalElement) {
                         const deleteModal = new bootstrap.Modal(modalElement);
                         deleteModal.show();
@@ -41,7 +41,8 @@ export class Income {
                 }
             }
         });
-        const confirmDelete:HTMLElement | null = document.getElementById("confirmDelete")
+
+        const confirmDelete: HTMLElement | null = document.getElementById("confirmDelete");
         if (confirmDelete) {
             confirmDelete.addEventListener("click", async (): Promise<void> => {
                 if (this.currentDeleteTarget && this.currentDeleteId) {

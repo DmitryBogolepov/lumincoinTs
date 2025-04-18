@@ -1,6 +1,6 @@
 export type ChangeFormType = {
     type:string,
-    category_id:number,
+    category:string,
     amount:number,
     date:string,
     comment:string,

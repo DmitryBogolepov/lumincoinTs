@@ -33,7 +33,7 @@ export class Change {
     }
 
     private async loadData():Promise<void> {
-        const params = new URLSearchParams(window.location.search);
+        const params:URLSearchParams = new URLSearchParams(window.location.search);
         const id:string | null = params.get("id");
         if (id) {
             try {
@@ -47,14 +47,14 @@ export class Change {
         }
     }
 
-    private populateForm(data:ChangeFormType):void {
+    private async populateForm(data:ChangeFormType):Promise<void> {
         this.typeElement.value = data.type;
         this.amountElement.value = data.amount.toString();
         this.dateElement.value = data.date;
         this.commentaryElement.value = data.comment || '';
 
-        this.onTypeChange();
-        this.categoryElement.value = data.category_id.toString();
+        await this.onTypeChange();
+        this.categoryElement.value = data.category;
     }
 
     private async onTypeChange():Promise<void> {
