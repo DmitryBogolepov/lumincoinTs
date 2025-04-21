@@ -132,7 +132,7 @@ export class Main {
         }
     }
 
-    async getAllData():Promise<any> {
+    async getAllData():Promise<DataType[]> {
         try {
             const params:URLSearchParams = new URLSearchParams({
                 period: this.currentPeriod || "all",

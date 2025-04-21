@@ -47,7 +47,6 @@ export class Create {
             this.categoriesList.push({
                 id: category.id,
                 title: category.title,
-                type: selectedType as 'income' | 'expense'
             });
             let option:HTMLOptionElement = document.createElement('option');
             option.value = category.title;

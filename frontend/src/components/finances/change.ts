@@ -108,7 +108,7 @@ export class Change {
             isValid = false;
         }
 
-        if (comment !== null && comment.trim() !== '') {
+        if (comment != null && comment.trim() !== '') {
             this.commentaryElement.classList.remove('is-invalid');
         } else {
             this.commentaryElement.classList.add('is-invalid');

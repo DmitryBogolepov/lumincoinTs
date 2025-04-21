@@ -5,8 +5,8 @@ import {OpenNewRouteType} from "../../types/open-route.type";
 import {CategoryRequestType} from "../../types/category-request.type";
 import {DefaultResponseType} from "../../types/default-response.type";
 import * as bootstrap from "bootstrap";
-import {OperationType} from "../../types/login-resquest.type";
 import {Modal} from "bootstrap";
+import {TableDataType} from "../../types/table-data.type";
 
 export class IncomeExpense {
     readonly openNewRoute: OpenNewRouteType;
@@ -14,9 +14,9 @@ export class IncomeExpense {
     private endDate: Date | null;
     private currentPeriod: string;
     private categories: CategoryRequestType[];
-    private currentDeleteId!: string | null
+    private currentDeleteId!: string | null;
     private currentDeleteTarget!: HTMLElement | null;
-
+    private deleteModalInstance: Modal | null = null;
     constructor(openNewRoute: OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         this.currentPeriod = "all";
@@ -41,13 +41,13 @@ export class IncomeExpense {
 
             if (!incomeResult.error && incomeResult.response) {
                 this.categories.push(
-                    ...incomeResult.response.map((cat: any) => ({...cat, type: 'income'}))
+                    ...incomeResult.response.map((cat: CategoryRequestType[]) => ({...cat, type: 'income'}))
                 );
             }
 
             if (!expenseResult.error && expenseResult.response) {
                 this.categories.push(
-                    ...expenseResult.response.map((cat: any) => ({...cat, type: 'expense'}))
+                    ...expenseResult.response.map((cat: CategoryRequestType[]) => ({...cat, type: 'expense'}))
                 );
             }
         } catch (error) {
@@ -67,10 +67,10 @@ export class IncomeExpense {
     async handleButtonClick(event: MouseEvent, buttons: NodeListOf<Element>): Promise<void> {
         buttons.forEach(btn => btn.classList.remove("btn-secondary"));
         buttons.forEach(btn => btn.classList.add("btn-outline-secondary"));
-        const target = event.currentTarget as HTMLElement;
+        const target:HTMLElement = event.currentTarget as HTMLElement;
         target.classList.add("btn-secondary");
         target.classList.remove("btn-outline-secondary");
-        const buttonText = target.innerText;
+        const buttonText:string = target.innerText;
 
         switch (buttonText) {
             case "Сегодня":
@@ -136,7 +136,7 @@ export class IncomeExpense {
 
             try {
                 const result = await HttpUtils.request(`/operations?${params}`, "GET", true);
-                const data = result.response || [];
+                const data:TableDataType[] = result.response || [];
                 await this.drawTable(data);
             } catch (error) {
                 console.error("Ошибка при обновлении таблицы:", error);
@@ -146,16 +146,12 @@ export class IncomeExpense {
 
     async getAllData() {
         try {
-            const params = new URLSearchParams({
+            const params:URLSearchParams = new URLSearchParams({
                 period: this.currentPeriod || "all",
             });
             if (this.currentPeriod === "interval" && this.startDate && this.endDate) {
-                const localStartDate = this.startDate.toLocaleDateString('en-CA'); // 'en-CA' для формата YYYY-MM-DD
-                const localEndDate = this.endDate.toLocaleDateString('en-CA');
-
-                console.log("Start Date:", localStartDate);
-                console.log("End Date:", localEndDate);
-
+                const localStartDate: string = this.startDate.toISOString().split('T')[0];
+                const localEndDate: string = this.endDate.toISOString().split('T')[0];
                 params.append("dateFrom", localStartDate);
                 params.append("dateTo", localEndDate);
             }
@@ -167,7 +163,7 @@ export class IncomeExpense {
         }
     }
 
-    async drawTable(data?: any): Promise<void> {
+    async drawTable(data?: TableDataType[]): Promise<void> {
         if (!data) {
             data = await this.getAllData();
         }
@@ -175,7 +171,7 @@ export class IncomeExpense {
 
         if(tbody) {
             tbody.innerHTML = "";
-            (data as OperationType[]).forEach((item: OperationType, index: number): void => {
+            (data as TableDataType[]).forEach((item: TableDataType, index: number): void => {
                 let typeText: string = "";
                 let typeColor: string = "";
 
@@ -189,7 +185,7 @@ export class IncomeExpense {
                     typeText = "Неизвестно";
                     typeColor = "text-muted";
                 }
-                const categoryText = item.category || '—';
+                const categoryText:string = item.category || '—';
 
                 const row: HTMLTableRowElement | null = document.createElement("tr");
                 row.classList.add("table-row");
@@ -227,17 +223,17 @@ export class IncomeExpense {
             const target:HTMLElement = event.target as HTMLAnchorElement;
             const deleteButton = target.closest("a.delete-btn");
             if (deleteButton) {
-                console.log("Клик по delete:", target);
                 event.preventDefault();
-                const actionCard:HTMLElement | null = deleteButton.closest(".action-card");
+                const actionCard:HTMLElement | null = deleteButton.closest(".table-row");
                 if (actionCard) {
                     this.currentDeleteTarget = actionCard;
                     this.currentDeleteId = actionCard.dataset?.id || null;
                     const modalElement:HTMLElement | null = document.getElementById("deleteModal");
                     if (modalElement) {
-                        console.log("Нашли модалку:", modalElement);
-                        const deleteModal:Modal = new bootstrap.Modal(modalElement);
-                        deleteModal.show();
+                        if (!this.deleteModalInstance) {
+                            this.deleteModalInstance = new bootstrap.Modal(modalElement);
+                        }
+                        this.deleteModalInstance.show();
                     }
                 }
             }
@@ -251,11 +247,18 @@ export class IncomeExpense {
                         if (!response.error) {
                             this.currentDeleteTarget.remove();
                             const modalElement: HTMLElement | null = document.getElementById("deleteModal");
-                            if (modalElement) {
-                                const modalInstance: any | null = bootstrap.Modal.getInstance(modalElement);
-                                if (modalInstance) {
-                                    modalInstance.hide();
-                                }
+                            if (modalElement && this.deleteModalInstance) {
+                                modalElement.addEventListener(
+                                    'hidden.bs.modal',
+                                    () => {
+                                        this.deleteModalInstance?.dispose();
+                                        this.deleteModalInstance = null;
+                                        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                                    },
+                                    { once: true }
+                                );
+                                (document.activeElement as HTMLElement)?.blur();
+                                this.deleteModalInstance.hide();
                             }
                         } else {
                             console.error("Ошибка удаления:", response);

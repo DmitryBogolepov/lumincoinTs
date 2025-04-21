@@ -4,7 +4,7 @@ import {DefaultResponseType} from "../types/default-response.type";
 import {ParamsType} from "../types/params.type";
 
 export class HttpUtils {
-    public static async request(url:string, method:string = "GET",useAuth:boolean = true, body?:Record<string, any> | null):Promise<any> {
+    public static async request(url:string, method:string = "GET",useAuth:boolean = true, body?:Record<string,any> | null):Promise<any> {
         const result:DefaultResponseType = {
             error: false,
             response: null,

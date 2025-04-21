@@ -10,7 +10,7 @@ export class Income {
     readonly openNewRoute: OpenNewRouteType;
     private currentDeleteTarget: HTMLElement | null;
     private currentDeleteId: string | null = null;
-
+    private deleteModalInstance: Modal | null = null;
     constructor(openNewRoute: OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         this.currentDeleteTarget = null;
@@ -22,7 +22,6 @@ export class Income {
         this.initEditButtons();
         this.getAllIncomes();
     }
-
     private initDeleteButtons(): void {
         document.addEventListener("click", (event: MouseEvent): void => {
             const target = event.target as HTMLElement;
@@ -35,14 +34,16 @@ export class Income {
                     this.currentDeleteId = actionCard.dataset?.id || null;
                     const modalElement: HTMLElement | null = document.getElementById("deleteModal");
                     if (modalElement) {
-                        const deleteModal = new bootstrap.Modal(modalElement);
-                        deleteModal.show();
+                        if (!this.deleteModalInstance) {
+                            this.deleteModalInstance = new bootstrap.Modal(modalElement);
+                        }
+                        this.deleteModalInstance.show();
                     }
                 }
             }
         });
-
         const confirmDelete: HTMLElement | null = document.getElementById("confirmDelete");
+        const cancelDelete: HTMLElement | null = document.getElementById("cancelDelete");
         if (confirmDelete) {
             confirmDelete.addEventListener("click", async (): Promise<void> => {
                 if (this.currentDeleteTarget && this.currentDeleteId) {
@@ -51,11 +52,18 @@ export class Income {
                         if (!response.error) {
                             this.currentDeleteTarget.remove();
                             const modalElement: HTMLElement | null = document.getElementById("deleteModal");
-                            if (modalElement) {
-                                const modalInstance: Modal | null = bootstrap.Modal.getInstance(modalElement);
-                                if (modalInstance) {
-                                    modalInstance.hide();
-                                }
+                            if (modalElement && this.deleteModalInstance) {
+                                modalElement.addEventListener(
+                                    'hidden.bs.modal',
+                                    () => {
+                                        this.deleteModalInstance?.dispose();
+                                        this.deleteModalInstance = null;
+                                        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                                    },
+                                    { once: true }
+                                );
+                                (document.activeElement as HTMLElement)?.blur();
+                                this.deleteModalInstance.hide();
                             }
                         } else {
                             console.error("Ошибка удаления:", response);
@@ -63,6 +71,14 @@ export class Income {
                     } catch (error) {
                         console.error("Ошибка запроса:", error);
                     }
+                }
+            });
+        }
+        if (cancelDelete) {
+            cancelDelete.addEventListener("click", (): void => {
+                if (this.deleteModalInstance) {
+                    this.deleteModalInstance.hide();
+                    this.currentDeleteId = null;
                 }
             });
         }
