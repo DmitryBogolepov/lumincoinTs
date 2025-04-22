@@ -110,7 +110,7 @@ export class IncomeExpense {
         if (!startInput || !endInput) return;
 
         flatpickr(startInput, {
-            dateFormat: "Y-m-d",
+            dateFormat: "d.m.Y",
             onChange: async (selectedDates: Date[]): Promise<void> => {
                 this.startDate = selectedDates[0];
                 await this.updateTable();
@@ -118,7 +118,7 @@ export class IncomeExpense {
         });
 
         flatpickr(endInput, {
-            dateFormat: "Y-m-d",
+            dateFormat: "d.m.Y",
             onChange: async (selectedDates: Date[]): Promise<void> => {
                 this.endDate = selectedDates[0];
                 await this.updateTable();
@@ -195,7 +195,7 @@ export class IncomeExpense {
                 <td class="${typeColor}">${typeText}</td>
                 <td>${categoryText}</td>
                 <td>${item.amount}</td>
-                <td>${item.date}</td>
+                <td>${this.formatDateToDMY(item.date)}</td>
                 <td>${item.comment || '—'}</td>
                 <td>
                     <a href="javascript:void(0)" class="delete-btn delete-icon text-decoration-none">
@@ -217,6 +217,15 @@ export class IncomeExpense {
             });
         }
     }
+
+    private formatDateToDMY(dateStr: string): string {
+        const date:Date = new Date(dateStr);
+        const day:string = String(date.getDate()).padStart(2, "0");
+        const month:string = String(date.getMonth() + 1).padStart(2, "0");
+        const year:number = date.getFullYear();
+        return `${day}.${month}.${year}`;
+    }
+
 
     private initDeleteButtons(): void {
         document.addEventListener("click", (event: MouseEvent): void => {

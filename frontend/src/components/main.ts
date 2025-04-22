@@ -75,22 +75,21 @@ export class Main {
         }
     }
 
-    private async initDatePickers():Promise<void> {
-        const startInput:HTMLElement | null = document.getElementById("start-interval");
-        const endInput:HTMLElement | null = document.getElementById("end-interval");
+    private async initDatePickers(): Promise<void> {
+        const startInput: HTMLElement | null = document.getElementById("start-interval");
+        const endInput: HTMLElement | null = document.getElementById("end-interval");
         if (startInput && endInput) {
             flatpickr(startInput, {
-                dateFormat: "Y-m-d",
-                onChange: (selectedDates:Date[]):void => {
+                dateFormat: "d.m.Y",
+                onChange: (selectedDates: Date[]): void => {
                     this.startDate = selectedDates[0];
                     this.updateCharts();
                 }
             });
 
-
             flatpickr(endInput, {
-                dateFormat: "Y-m-d",
-                onChange: (selectedDates:Date[]):void => {
+                dateFormat: "d.m.Y",
+                onChange: (selectedDates: Date[]): void => {
                     this.endDate = selectedDates[0];
                     this.updateCharts();
                 }
