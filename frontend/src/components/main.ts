@@ -81,6 +81,7 @@ export class Main {
         if (startInput && endInput) {
             flatpickr(startInput, {
                 dateFormat: "d.m.Y",
+                minDate:this.startDate || undefined,
                 onChange: (selectedDates: Date[]): void => {
                     this.startDate = selectedDates[0];
                     this.updateCharts();
@@ -99,10 +100,17 @@ export class Main {
 
     async updateCharts():Promise<void> {
         if (this.startDate && this.endDate) {
+            const formatDate = (date:Date):string => {
+                const year:number = date.getFullYear();
+                const month:string = String(date.getMonth()+1).padStart(2, '0');
+                const day:string = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`
+            };
+
             const params :URLSearchParams= new URLSearchParams({
                 period: this.currentPeriod,
-                dateFrom: this.startDate.toISOString().split("T")[0],
-                dateTo: this.endDate.toISOString().split("T")[0]
+                dateFrom: formatDate(this.startDate),
+                dateTo: formatDate(this.endDate)
             });
 
             try {

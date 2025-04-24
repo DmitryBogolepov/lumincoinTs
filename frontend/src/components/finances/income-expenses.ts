@@ -111,6 +111,7 @@ export class IncomeExpense {
 
         flatpickr(startInput, {
             dateFormat: "d.m.Y",
+            minDate:this.startDate ||undefined,
             onChange: async (selectedDates: Date[]): Promise<void> => {
                 this.startDate = selectedDates[0];
                 await this.updateTable();
@@ -128,10 +129,16 @@ export class IncomeExpense {
 
     async updateTable(): Promise<void> {
         if (this.startDate && this.endDate) {
+            const formatDate = (date:Date):string => {
+                const year:number = date.getFullYear();
+                const month:string = String(date.getMonth()+1).padStart(2, '0');
+                const day:string = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`
+            };
             const params:URLSearchParams = new URLSearchParams({
                 period: this.currentPeriod,
-                dateFrom: this.startDate.toISOString().split("T")[0],
-                dateTo: this.endDate.toISOString().split("T")[0]
+                dateFrom: formatDate(this.startDate),
+                dateTo: formatDate(this.endDate)
             });
 
             try {
@@ -150,10 +157,14 @@ export class IncomeExpense {
                 period: this.currentPeriod || "all",
             });
             if (this.currentPeriod === "interval" && this.startDate && this.endDate) {
-                const localStartDate: string = this.startDate.toISOString().split('T')[0];
-                const localEndDate: string = this.endDate.toISOString().split('T')[0];
-                params.append("dateFrom", localStartDate);
-                params.append("dateTo", localEndDate);
+                const formatDate = (date:Date):string => {
+                    const year:number = date.getFullYear();
+                    const month:string = String(date.getMonth()+1).padStart(2, '0');
+                    const day:string = String(date.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`
+                };
+                params.append('dateFrom', formatDate(this.startDate));
+                params.append('dateTo', formatDate(this.endDate));
             }
             const result = await HttpUtils.request(`/operations?${params}`, "GET", true);
             return result.response || [];
