@@ -32,11 +32,21 @@ export class Income {
                 if (actionCard) {
                     this.currentDeleteTarget = actionCard;
                     this.currentDeleteId = actionCard.dataset?.id || null;
-                    const modalElement: HTMLElement | null = document.getElementById("deleteModal");
+                    const modalElement:HTMLElement | null = document.getElementById("deleteModal");
                     if (modalElement) {
-                        if (!this.deleteModalInstance) {
-                            this.deleteModalInstance = new bootstrap.Modal(modalElement);
+                        if (this.deleteModalInstance) {
+                            this.deleteModalInstance.dispose();
                         }
+                        modalElement.addEventListener('hidden.bs.modal', () => {
+                            const backDrops = document.querySelectorAll('.modal-backdrop');
+                            backDrops.forEach(backdrop => {
+                                backdrop.remove();
+                            });
+                            document.body.classList.remove('modal-open');
+                            document.body.style.overflow = "";
+                            document.body.style.paddingRight = "";
+                        })
+                        this.deleteModalInstance = new bootstrap.Modal(modalElement);
                         this.deleteModalInstance.show();
                     }
                 }

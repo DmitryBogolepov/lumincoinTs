@@ -11,6 +11,9 @@ export class Expenses {
     private currentDeleteTarget: HTMLElement | null;
     private currentDeleteId: string | null = null;
     private deleteModalInstance: Modal | null = null;
+    private deleteButtonHandler!: (event: MouseEvent) => void;
+    private isDeleteModalInitialized: boolean = false;
+
     constructor(openNewRoute: OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         this.currentDeleteTarget = null;
@@ -24,7 +27,10 @@ export class Expenses {
     }
 
     private initDeleteButtons(): void {
-        document.addEventListener("click", (event: MouseEvent): void => {
+        if (this.isDeleteModalInitialized) {
+            return;
+        }
+        this.deleteButtonHandler = (event: MouseEvent): void => {
             const target = event.target as HTMLElement;
             const deleteButton = target.closest(".delete-btn");
             if (deleteButton) {
@@ -35,54 +41,61 @@ export class Expenses {
                     this.currentDeleteId = actionCard.dataset?.id || null;
                     const modalElement: HTMLElement | null = document.getElementById("deleteModal");
                     if (modalElement) {
-                        if (!this.deleteModalInstance) {
-                            this.deleteModalInstance = bootstrap.Modal.getOrCreateInstance(modalElement);
+                        if (this.deleteModalInstance) {
+                            this.deleteModalInstance.dispose();
                         }
+                        modalElement.addEventListener('hidden.bs.modal', () => {
+                            const backDrops = document.querySelectorAll('.modal-backdrop');
+                            backDrops.forEach(backdrop => {
+                                backdrop.remove();
+                            });
+                            document.body.classList.remove('modal-open');
+                            document.body.style.overflow = "";
+                            document.body.style.paddingRight = "";
+                        })
+                        this.deleteModalInstance = new bootstrap.Modal(modalElement);
                         this.deleteModalInstance.show();
                     }
                 }
             }
-        });
-
+        };
+        document.addEventListener("click", this.deleteButtonHandler);
         const confirmDelete: HTMLElement | null = document.getElementById("confirmDelete");
         const cancelDelete: HTMLElement | null = document.getElementById("cancelDelete");
         if (confirmDelete) {
-            confirmDelete.addEventListener("click", async (): Promise<void> => {
-                if (this.currentDeleteTarget && this.currentDeleteId) {
-                    try {
-                        const response: DefaultResponseType = await HttpUtils.request(`/categories/expense/${this.currentDeleteId}`, "DELETE", true, null);
-                        if (!response.error) {
-                            this.currentDeleteTarget.remove();
-                            const modalElement: HTMLElement | null = document.getElementById("deleteModal");
-                            if (modalElement && this.deleteModalInstance) {
-                                modalElement.addEventListener(
-                                    'hidden.bs.modal',
-                                    () => {
-                                        this.deleteModalInstance?.dispose();
-                                        this.deleteModalInstance = null;
-                                        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-                                    },
-                                    { once: true }
-                                );
-                                (document.activeElement as HTMLElement)?.blur();
-                                this.deleteModalInstance.hide();
-                            }
-                        } else {
-                            console.error("Ошибка удаления:", response);
-                        }
-                    } catch (error) {
-                        console.error("Ошибка запроса:", error);
-                    }
-                }
-            });
+            confirmDelete.addEventListener("click", this.confirmDeleteHandler.bind(this));
         }
         if (cancelDelete) {
-            cancelDelete.addEventListener("click", (): void => {
-                if (this.deleteModalInstance) {
-                    this.deleteModalInstance.hide();
-                    this.currentDeleteId = null;
+            cancelDelete.addEventListener("click", this.cancelDeleteHandler.bind(this));
+        }
+        this.isDeleteModalInitialized = true;
+    }
+    private async confirmDeleteHandler(): Promise<void> {
+        if (this.currentDeleteTarget && this.currentDeleteId) {
+            try {
+                const response: DefaultResponseType = await HttpUtils.request(`/categories/expense/${this.currentDeleteId}`, "DELETE", true, null);
+                if (!response.error) {
+                    this.currentDeleteTarget.remove();
+                    if (this.deleteModalInstance) {
+                        (document.activeElement as HTMLElement)?.blur();
+                        this.deleteModalInstance.hide();
+                        this.deleteModalInstance.dispose();
+                        this.deleteModalInstance = null;
+                        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                    }
+                } else {
+                    console.error("Ошибка удаления:", response);
                 }
-            });
+            } catch (error) {
+                console.error("Ошибка запроса:", error);
+            }
+        }
+    }
+
+    private cancelDeleteHandler(): void {
+        if (this.deleteModalInstance) {
+            this.deleteModalInstance.hide();
+            this.currentDeleteId = null;
         }
     }
 

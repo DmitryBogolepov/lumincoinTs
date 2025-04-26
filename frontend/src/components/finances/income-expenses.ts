@@ -1,6 +1,7 @@
 import {AuthUtils} from "../../utils/auth-utils";
 import {HttpUtils} from "../../utils/http-utils";
 import flatpickr from "flatpickr";
+
 import {OpenNewRouteType} from "../../types/open-route.type";
 import {CategoryRequestType} from "../../types/category-request.type";
 import {DefaultResponseType} from "../../types/default-response.type";
@@ -71,7 +72,12 @@ export class IncomeExpense {
         target.classList.add("btn-secondary");
         target.classList.remove("btn-outline-secondary");
         const buttonText:string = target.innerText;
-
+        const startInput:  HTMLInputElement | null = document.getElementById("start-interval")as HTMLInputElement;
+        const endInput:  HTMLInputElement | null = document.getElementById("end-interval")as HTMLInputElement;
+        if (startInput && endInput) {
+            startInput.disabled =true;
+            endInput.disabled = true;
+        }
         switch (buttonText) {
             case "Сегодня":
                 this.currentPeriod = "day";
@@ -97,6 +103,8 @@ export class IncomeExpense {
         }
 
         if (this.currentPeriod === "interval") {
+            startInput.disabled = false;
+            endInput.disabled = false;
             await this.updateTable();
         } else {
             await this.drawTable();
@@ -108,7 +116,6 @@ export class IncomeExpense {
         const endInput:  HTMLInputElement | null = document.getElementById("end-interval")as HTMLInputElement;
 
         if (!startInput || !endInput) return;
-
         flatpickr(startInput, {
             dateFormat: "d.m.Y",
             minDate:this.startDate ||undefined,
@@ -250,9 +257,19 @@ export class IncomeExpense {
                     this.currentDeleteId = actionCard.dataset?.id || null;
                     const modalElement:HTMLElement | null = document.getElementById("deleteModal");
                     if (modalElement) {
-                        if (!this.deleteModalInstance) {
-                            this.deleteModalInstance = new bootstrap.Modal(modalElement);
+                        if (this.deleteModalInstance) {
+                            this.deleteModalInstance.dispose();
                         }
+                        modalElement.addEventListener('hidden.bs.modal', () => {
+                            const backDrops = document.querySelectorAll('.modal-backdrop');
+                            backDrops.forEach(backdrop => {
+                                backdrop.remove();
+                            });
+                            document.body.classList.remove('modal-open');
+                            document.body.style.overflow = "";
+                            document.body.style.paddingRight = "";
+                        })
+                        this.deleteModalInstance = new bootstrap.Modal(modalElement);
                         this.deleteModalInstance.show();
                     }
                 }

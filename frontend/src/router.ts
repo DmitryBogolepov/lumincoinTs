@@ -16,6 +16,7 @@ import {Layout} from "./components/layout";
 import {RouteType} from "./types/route.type";
 import {AuthInfo} from "./types/Auth-tokens-response.type";
 import {UserInfoType} from "./types/userInfo.type";
+import {Modal} from "bootstrap";
 
 
 export class Router {
@@ -155,7 +156,6 @@ export class Router {
         history.pushState({}, '', url);
         await this.activateRoute(currentRoute);
     }
-
     async clickHandler(e:Event):Promise<void> {
         const target = e.target as HTMLElement;
         let element:HTMLAnchorElement | null = null;
