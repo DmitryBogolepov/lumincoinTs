@@ -39,12 +39,22 @@ export class Main {
         });
     }
     private async handleButtonClick(event:MouseEvent, buttons:NodeListOf<Element>):Promise<void> {
+        interface FlatpickrInput extends HTMLInputElement {
+            _flatpickr: flatpickr.Instance;
+        }
         buttons.forEach(btn => btn.classList.remove("btn-secondary"));
         buttons.forEach(btn => btn.classList.add("btn-outline-secondary"));
         const target = event.currentTarget as HTMLElement;
         target.classList.add("btn-secondary");
         target.classList.remove("btn-outline-secondary");
         const buttonText:string = target.innerText;
+        const startInput:  HTMLInputElement | null = document.getElementById("start-interval")as FlatpickrInput;
+        const endInput:  HTMLInputElement | null = document.getElementById("end-interval")as FlatpickrInput;
+        if (startInput && endInput) {
+            startInput.disabled =false;
+            endInput.disabled = false;
+        }
+
         switch (buttonText) {
             case "Сегодня":
                 this.currentPeriod = "day";
@@ -69,6 +79,10 @@ export class Main {
                 break;
         }
         if (this.currentPeriod === "interval") {
+            startInput.disabled = true;
+            endInput.disabled = true;
+            (startInput as FlatpickrInput)._flatpickr.set('clickOpens', true);
+            (endInput as FlatpickrInput)._flatpickr.set('clickOpens', true);
             await this.updateCharts();
         } else {
             await this.drawPie();
@@ -82,6 +96,7 @@ export class Main {
             flatpickr(startInput, {
                 dateFormat: "d.m.Y",
                 minDate:this.startDate || undefined,
+                clickOpens: false,
                 onChange: (selectedDates: Date[]): void => {
                     this.startDate = selectedDates[0];
                     this.updateCharts();
@@ -90,6 +105,7 @@ export class Main {
 
             flatpickr(endInput, {
                 dateFormat: "d.m.Y",
+                clickOpens: false,
                 onChange: (selectedDates: Date[]): void => {
                     this.endDate = selectedDates[0];
                     this.updateCharts();

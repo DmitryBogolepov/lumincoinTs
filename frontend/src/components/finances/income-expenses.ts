@@ -66,17 +66,20 @@ export class IncomeExpense {
     }
 
     async handleButtonClick(event: MouseEvent, buttons: NodeListOf<Element>): Promise<void> {
+        interface FlatpickrInput extends HTMLInputElement {
+            _flatpickr: flatpickr.Instance;
+        }
         buttons.forEach(btn => btn.classList.remove("btn-secondary"));
         buttons.forEach(btn => btn.classList.add("btn-outline-secondary"));
         const target:HTMLElement = event.currentTarget as HTMLElement;
         target.classList.add("btn-secondary");
         target.classList.remove("btn-outline-secondary");
         const buttonText:string = target.innerText;
-        const startInput:  HTMLInputElement | null = document.getElementById("start-interval")as HTMLInputElement;
-        const endInput:  HTMLInputElement | null = document.getElementById("end-interval")as HTMLInputElement;
+        const startInput:  HTMLInputElement | null = document.getElementById("start-interval")as FlatpickrInput;
+        const endInput:  HTMLInputElement | null = document.getElementById("end-interval")as FlatpickrInput;
         if (startInput && endInput) {
-            startInput.disabled =true;
-            endInput.disabled = true;
+            startInput.disabled =false;
+            endInput.disabled = false;
         }
         switch (buttonText) {
             case "Сегодня":
@@ -96,6 +99,7 @@ export class IncomeExpense {
                 break;
             case "Интервал":
                 this.currentPeriod = "interval";
+
                 break;
             default:
                 this.currentPeriod = "all";
@@ -103,13 +107,17 @@ export class IncomeExpense {
         }
 
         if (this.currentPeriod === "interval") {
-            startInput.disabled = false;
-            endInput.disabled = false;
+            startInput.disabled = true;
+            endInput.disabled = true;
+            (startInput as FlatpickrInput)._flatpickr.set('clickOpens', true);
+            (endInput as FlatpickrInput)._flatpickr.set('clickOpens', true);
             await this.updateTable();
         } else {
             await this.drawTable();
         }
     }
+
+
 
     async initDatePickers(): Promise<void> {
         const startInput:  HTMLInputElement | null = document.getElementById("start-interval")as HTMLInputElement;
@@ -119,6 +127,7 @@ export class IncomeExpense {
         flatpickr(startInput, {
             dateFormat: "d.m.Y",
             minDate:this.startDate ||undefined,
+            clickOpens: false,
             onChange: async (selectedDates: Date[]): Promise<void> => {
                 this.startDate = selectedDates[0];
                 await this.updateTable();
@@ -127,6 +136,7 @@ export class IncomeExpense {
 
         flatpickr(endInput, {
             dateFormat: "d.m.Y",
+            clickOpens: false,
             onChange: async (selectedDates: Date[]): Promise<void> => {
                 this.endDate = selectedDates[0];
                 await this.updateTable();
