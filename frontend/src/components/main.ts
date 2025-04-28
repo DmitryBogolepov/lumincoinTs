@@ -14,13 +14,16 @@ export class Main {
     private currentPeriod:string;
     private incomeChart: Chart | null;
     private expensesChart: Chart | null;
+    readonly intervalBlock:HTMLElement | null;
     constructor(openNewRoute:OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
         this.incomeChart = null;
         this.expensesChart = null;
         this.startDate = null;
         this.endDate = null;
-        this.currentPeriod = "all";
+        this.currentPeriod = "day";
+        this.intervalBlock =document.getElementById('interval-block');
+        if(this.intervalBlock)this.intervalBlock.style.display ="none";
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             this.openNewRoute('/sign-in');
             return;
@@ -37,19 +40,26 @@ export class Main {
                 await this.handleButtonClick(event as MouseEvent, buttons);
             });
         });
+        if (buttons.length > 0) {
+            buttons[0].classList.add("active");
+        }
     }
     private async handleButtonClick(event:MouseEvent, buttons:NodeListOf<Element>):Promise<void> {
+        event.preventDefault();
+        buttons.forEach(button => button.classList.remove('active'));
         interface FlatpickrInput extends HTMLInputElement {
             _flatpickr: flatpickr.Instance;
         }
         buttons.forEach(btn => btn.classList.remove("btn-secondary"));
         buttons.forEach(btn => btn.classList.add("btn-outline-secondary"));
+        const intervalBlock = document.getElementById('interval-block');
         const target = event.currentTarget as HTMLElement;
         target.classList.add("btn-secondary");
         target.classList.remove("btn-outline-secondary");
         const buttonText:string = target.innerText;
         const startInput:  HTMLInputElement | null = document.getElementById("start-interval")as FlatpickrInput;
         const endInput:  HTMLInputElement | null = document.getElementById("end-interval")as FlatpickrInput;
+        if (this.intervalBlock)this.intervalBlock.style.display = "none"
         if (startInput && endInput) {
             startInput.disabled =false;
             endInput.disabled = false;
@@ -73,6 +83,9 @@ export class Main {
                 break;
             case "Интервал":
                 this.currentPeriod = "interval";
+                if (this.intervalBlock) {
+                    this.intervalBlock.style.display = "block";
+                }
                 break;
             default:
                 this.currentPeriod = "all";
@@ -139,21 +152,22 @@ export class Main {
         }
     }
 
-    async drawPie(data:DataType[] | null = null):Promise<void> {
+    async drawPie(data: DataType[] | null = null): Promise<void> {
         try {
             if (!data) {
                 data = await this.getAllData();
-                if (data?.filter) {
-                    const incomeItems:DataType[] = data.filter(item => item.type === "income");
-                    const expenseItems:DataType[] = data.filter(item => item.type !== "income");
-                    this.createChart("incomeChart", "Доходы", incomeItems, this.incomeChart);
-                    this.createChart("expensesChart", "Расходы", expenseItems, this.expensesChart);
-                }
+            }
+            if (data?.filter) {
+                const incomeItems: DataType[] = data.filter(item => item.type === "income");
+                const expenseItems: DataType[] = data.filter(item => item.type !== "income");
+                this.createChart("incomeChart", "Доходы", incomeItems, this.incomeChart);
+                this.createChart("expensesChart", "Расходы", expenseItems, this.expensesChart);
             }
         } catch (error) {
             console.error("Ошибка при загрузке данных:", error);
         }
     }
+
 
     async getAllData():Promise<DataType[]> {
         try {

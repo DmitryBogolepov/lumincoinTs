@@ -18,12 +18,15 @@ export class IncomeExpense {
     private currentDeleteId!: string | null;
     private currentDeleteTarget!: HTMLElement | null;
     private deleteModalInstance: Modal | null = null;
+    readonly intervalBlock:HTMLElement | null;
     constructor(openNewRoute: OpenNewRouteType) {
         this.openNewRoute = openNewRoute;
-        this.currentPeriod = "all";
+        this.currentPeriod = "day";
         this.startDate = null;
         this.endDate = null;
         this.categories = [];
+        this.intervalBlock =document.getElementById('interval-block');
+        if(this.intervalBlock)this.intervalBlock.style.display ="none";
         if (!AuthUtils.getAuthInfo(AuthUtils.accessTokenKey)) {
             this.openNewRoute('/sign-in');
             return;
@@ -58,14 +61,20 @@ export class IncomeExpense {
 
     setupButtonListeners(): void {
         const buttons: NodeListOf<Element> = document.querySelectorAll(".buttons-layout a");
+
         buttons.forEach(button => {
             button.addEventListener("click", async (event: Event): Promise<void> => {
                 await this.handleButtonClick(event as MouseEvent, buttons);
             });
         });
+        if (buttons.length > 0) {
+            buttons[0].classList.add("active");
+        }
     }
 
     async handleButtonClick(event: MouseEvent, buttons: NodeListOf<Element>): Promise<void> {
+        event.preventDefault();
+        buttons.forEach(button => button.classList.remove('active'));
         interface FlatpickrInput extends HTMLInputElement {
             _flatpickr: flatpickr.Instance;
         }
@@ -77,6 +86,7 @@ export class IncomeExpense {
         const buttonText:string = target.innerText;
         const startInput:  HTMLInputElement | null = document.getElementById("start-interval")as FlatpickrInput;
         const endInput:  HTMLInputElement | null = document.getElementById("end-interval")as FlatpickrInput;
+        if (this.intervalBlock)this.intervalBlock.style.display = "none"
         if (startInput && endInput) {
             startInput.disabled =false;
             endInput.disabled = false;
@@ -99,7 +109,9 @@ export class IncomeExpense {
                 break;
             case "Интервал":
                 this.currentPeriod = "interval";
-
+                if (this.intervalBlock) {
+                    this.intervalBlock.style.display = "block";
+                }
                 break;
             default:
                 this.currentPeriod = "all";

@@ -27,10 +27,7 @@ export class Expenses {
     }
 
     private initDeleteButtons(): void {
-        if (this.isDeleteModalInitialized) {
-            return;
-        }
-        this.deleteButtonHandler = (event: MouseEvent): void => {
+        document.addEventListener("click", (event: MouseEvent): void => {
             const target = event.target as HTMLElement;
             const deleteButton = target.closest(".delete-btn");
             if (deleteButton) {
@@ -39,7 +36,7 @@ export class Expenses {
                 if (actionCard) {
                     this.currentDeleteTarget = actionCard;
                     this.currentDeleteId = actionCard.dataset?.id || null;
-                    const modalElement: HTMLElement | null = document.getElementById("deleteModal");
+                    const modalElement:HTMLElement | null = document.getElementById("deleteModal");
                     if (modalElement) {
                         if (this.deleteModalInstance) {
                             this.deleteModalInstance.dispose();
@@ -58,44 +55,46 @@ export class Expenses {
                     }
                 }
             }
-        };
-        document.addEventListener("click", this.deleteButtonHandler);
+        });
         const confirmDelete: HTMLElement | null = document.getElementById("confirmDelete");
         const cancelDelete: HTMLElement | null = document.getElementById("cancelDelete");
         if (confirmDelete) {
-            confirmDelete.addEventListener("click", this.confirmDeleteHandler.bind(this));
+            confirmDelete.addEventListener("click", async (): Promise<void> => {
+                if (this.currentDeleteTarget && this.currentDeleteId) {
+                    try {
+                        const response: DefaultResponseType = await HttpUtils.request(`/categories/expense/${this.currentDeleteId}`, "DELETE", true, null);
+                        if (!response.error) {
+                            this.currentDeleteTarget.remove();
+                            const modalElement: HTMLElement | null = document.getElementById("deleteModal");
+                            if (modalElement && this.deleteModalInstance) {
+                                modalElement.addEventListener(
+                                    'hidden.bs.modal',
+                                    () => {
+                                        this.deleteModalInstance?.dispose();
+                                        this.deleteModalInstance = null;
+                                        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                                    },
+                                    { once: true }
+                                );
+                                (document.activeElement as HTMLElement)?.blur();
+                                this.deleteModalInstance.hide();
+                            }
+                        } else {
+                            console.error("Ошибка удаления:", response);
+                        }
+                    } catch (error) {
+                        console.error("Ошибка запроса:", error);
+                    }
+                }
+            });
         }
         if (cancelDelete) {
-            cancelDelete.addEventListener("click", this.cancelDeleteHandler.bind(this));
-        }
-        this.isDeleteModalInitialized = true;
-    }
-    private async confirmDeleteHandler(): Promise<void> {
-        if (this.currentDeleteTarget && this.currentDeleteId) {
-            try {
-                const response: DefaultResponseType = await HttpUtils.request(`/categories/expense/${this.currentDeleteId}`, "DELETE", true, null);
-                if (!response.error) {
-                    this.currentDeleteTarget.remove();
-                    if (this.deleteModalInstance) {
-                        (document.activeElement as HTMLElement)?.blur();
-                        this.deleteModalInstance.hide();
-                        this.deleteModalInstance.dispose();
-                        this.deleteModalInstance = null;
-                        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-                    }
-                } else {
-                    console.error("Ошибка удаления:", response);
+            cancelDelete.addEventListener("click", (): void => {
+                if (this.deleteModalInstance) {
+                    this.deleteModalInstance.hide();
+                    this.currentDeleteId = null;
                 }
-            } catch (error) {
-                console.error("Ошибка запроса:", error);
-            }
-        }
-    }
-
-    private cancelDeleteHandler(): void {
-        if (this.deleteModalInstance) {
-            this.deleteModalInstance.hide();
-            this.currentDeleteId = null;
+            });
         }
     }
 
